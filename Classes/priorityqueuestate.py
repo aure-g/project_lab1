@@ -1,4 +1,4 @@
-from state import State
+from .state import State
 
 class PriorityQueueState:
     def __init__(self):
@@ -29,8 +29,8 @@ class PriorityQueueState:
 
     # returns and remove the first element of the queue, that is the state with the lowest cost
     def pop(self) -> State :
-        if (not self.is_empty):
-            best_state = self.queue.pop(0) # necessarly the first element (aka the head of the queue) because it is sorted based on cost
+        if (not self.is_empty()):
+            best_state, best_cost = self.queue.pop(0) # necessarly the first element (aka the head of the queue) because it is sorted based on cost
             return best_state
         return None
 

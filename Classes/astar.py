@@ -1,5 +1,5 @@
-from state import State
-from priorityqueuestate import PriorityQueueState
+from .state import State
+from .priorityqueuestate import PriorityQueueState
 from Enumerations.action_type import ActionType
 
 class Astar:
@@ -30,7 +30,7 @@ class Astar:
                     moves.append(current.actionPere)
                     current = current.pere 
                 # we added the moves in the reverse order starting from the solution
-                moves.reverse
+                moves.reverse()
                 return moves
             
             self.add(current_state)

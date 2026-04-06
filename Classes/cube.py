@@ -25,8 +25,9 @@ class Cube:
         self.faceLeft = [colors_square[36:39], colors_square[39:42], colors_square[42:45]]
         self.faceRight = [colors_square[45:48], colors_square[48:51], colors_square[51:54]]
 
-        number_random_moves = random.randint(5,30) # can be changed depends if we give the choice to the user ?
-        self.shuffle()
+
+        number_random_moves = random.randint(5,6) # can be changed depends if we give the choice to the user ?
+        self.shuffle(number_random_moves)
 
     def isSolved(self) -> bool:
         for face in [self.faceUp, self.faceDown, self.faceFront, self.faceBack, self.faceLeft, self.faceRight]:
@@ -47,7 +48,18 @@ class Cube:
             result += " ".join(self.faceBack[i]) + "   "
             result += " ".join(self.faceLeft[i]) + "   "
             result += " ".join(self.faceRight[i]) + "\n"
-        return result    
+        return result 
+
+    # for the push function in priorityqueuestate we need to compare 2 cubes
+    def __eq__(self, other_cube) -> bool:
+        if not isinstance(other_cube, Cube):
+            return False
+        return (self.faceUp == other_cube.faceUp and 
+                self.faceDown == other_cube.faceDown and 
+                self.faceFront == other_cube.faceFront and 
+                self.faceBack == other_cube.faceBack and 
+                self.faceLeft == other_cube.faceLeft and 
+                self.faceRight == other_cube.faceRight)   
 
     # Turn clockwise - Alexandre
 
@@ -57,12 +69,18 @@ class Cube:
       None
     def turnFront(self) -> None:
       None
-    def turnRight(self) -> None:
-      None
-    def turnDown(self) -> None:
-      None
+
     def turnBack(self) -> None:
       None
+
+    def turnLeft(self) -> None:
+      None
+
+    def turnRight(self) -> None:
+       None
+
+    def turn_face(self, face) -> list[list[str]]:
+        return face
 
     # Turn counter clockwise - Aure
 
@@ -205,8 +223,9 @@ class Cube:
                     self.returnUp, 
                     self.returnFront]
        
-       for _ in nb_movements:
+       for _ in range(nb_movements):
           randomMove = random.choice(allActions)
+          print(randomMove.__name__)
           randomMove()
 
 
