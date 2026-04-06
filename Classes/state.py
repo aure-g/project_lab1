@@ -1,15 +1,17 @@
 from cube import Cube
 import copy
 from Enumerations.action_type import ActionType
+from state import State
 
 class State:
     def __init__(self, cube: Cube, nbActions: int, parentState: State | None, actionType: ActionType):
         self.cube: Cube = cube
         self.nbrActions: int = nbActions
         self.pere: State | None = parentState
-        self.actionPere: ActionType = actionType
-        self.valH: None = None
+        self.actionPere: ActionType = actionType # The action which led to the current state from the pere(father) state
+        self.valH: None = None # Number of moves left to solve the cube
         
+    # Function which calculates the 12 next possible moves the children states
     def expand(self) -> list[State]:
         children_states: list[State] = []
         
