@@ -25,7 +25,6 @@ class Cube:
         self.faceLeft = [colors_square[36:39], colors_square[39:42], colors_square[42:45]]
         self.faceRight = [colors_square[45:48], colors_square[48:51], colors_square[51:54]]
 
-
         number_random_moves = random.randint(5,6) # can be changed depends if we give the choice to the user ?
         self.shuffle(number_random_moves)
 
@@ -48,41 +47,139 @@ class Cube:
             result += " ".join(self.faceBack[i]) + "   "
             result += " ".join(self.faceLeft[i]) + "   "
             result += " ".join(self.faceRight[i]) + "\n"
-        return result 
+        return result
 
-    # for the push function in priorityqueuestate we need to compare 2 cubes
+    # For the push function in priorityqueuestate we need to compare 2 cubes
     def __eq__(self, other_cube) -> bool:
         if not isinstance(other_cube, Cube):
             return False
-        return (self.faceUp == other_cube.faceUp and 
-                self.faceDown == other_cube.faceDown and 
-                self.faceFront == other_cube.faceFront and 
-                self.faceBack == other_cube.faceBack and 
+        return (self.faceUp == other_cube.faceUp and
+                self.faceDown == other_cube.faceDown and
+                self.faceFront == other_cube.faceFront and
+                self.faceBack == other_cube.faceBack and
                 self.faceLeft == other_cube.faceLeft and 
-                self.faceRight == other_cube.faceRight)   
+                self.faceRight == other_cube.faceRight)
 
-    # Turn clockwise - Alexandre
+    # Turn clockwise
 
     def turnUp(self) -> None:
-      None
-    def turnLeft(self) -> None:
-      None
+        self.faceUp = self.turn_face(self.faceUp)
+
+        oldFrontRow = self.faceFront[0].copy()
+        self.faceFront[0] = self.faceRight[0].copy()
+        self.faceRight[0] = self.faceBack[0].copy()
+        self.faceBack[0] = self.faceLeft[0].copy()
+        self.faceLeft[0] = oldFrontRow
+
+    def turnDown(self) -> None:
+        self.faceDown = self.turn_face(self.faceDown)
+
+        oldFrontRow = self.faceFront[2].copy()
+        self.faceFront[2] = self.faceLeft[2].copy()
+        self.faceLeft[2] = self.faceBack[2].copy()
+        self.faceBack[2] = self.faceRight[2].copy()
+        self.faceRight[2] = oldFrontRow
+
     def turnFront(self) -> None:
-      None
+        self.faceFront = self.turn_face(self.faceFront)
+
+        oldUp = [self.faceUp[2][0], self.faceUp[2][1], self.faceUp[2][2]]
+        
+        self.faceUp[2][0] = self.faceLeft[2][2]
+        self.faceUp[2][1] = self.faceLeft[1][2]
+        self.faceUp[2][2] = self.faceLeft[0][2]
+        
+        self.faceLeft[2][2] = self.faceDown[0][0]
+        self.faceLeft[1][2] = self.faceDown[0][1]
+        self.faceLeft[0][2] = self.faceDown[0][2]
+        
+        self.faceDown[0][0] = self.faceRight[2][0]
+        self.faceDown[0][1] = self.faceRight[1][0]
+        self.faceDown[0][2] = self.faceRight[0][0]
+        
+        self.faceRight[0][0] = oldUp[0]
+        self.faceRight[1][0] = oldUp[1]
+        self.faceRight[2][0] = oldUp[2]
 
     def turnBack(self) -> None:
-      None
+        self.faceBack = self.turn_face(self.faceBack)
+
+        oldUp = [self.faceUp[0][0], self.faceUp[0][1], self.faceUp[0][2]]
+        
+        self.faceUp[0][0] = self.faceRight[0][2]
+        self.faceUp[0][1] = self.faceRight[1][2]
+        self.faceUp[0][2] = self.faceRight[2][2]
+        
+        self.faceRight[0][2] = self.faceDown[2][2]
+        self.faceRight[1][2] = self.faceDown[2][1]
+        self.faceRight[2][2] = self.faceDown[2][0]
+        
+        self.faceDown[2][2] = self.faceLeft[2][0]
+        self.faceDown[2][1] = self.faceLeft[1][0]
+        self.faceDown[2][0] = self.faceLeft[0][0]
+        
+        self.faceLeft[0][0] = oldUp[2]
+        self.faceLeft[1][0] = oldUp[1]
+        self.faceLeft[2][0] = oldUp[0]
 
     def turnLeft(self) -> None:
-      None
+        self.faceLeft = self.turn_face(self.faceLeft)
+        
+        oldUp = [self.faceUp[0][0], self.faceUp[1][0], self.faceUp[2][0]]
+        
+        self.faceUp[0][0] = self.faceBack[2][2]
+        self.faceUp[1][0] = self.faceBack[1][2]
+        self.faceUp[2][0] = self.faceBack[0][2]
+        
+        self.faceBack[2][2] = self.faceDown[0][0]
+        self.faceBack[1][2] = self.faceDown[1][0]
+        self.faceBack[0][2] = self.faceDown[2][0]
+        
+        self.faceDown[0][0] = self.faceFront[0][0]
+        self.faceDown[1][0] = self.faceFront[1][0]
+        self.faceDown[2][0] = self.faceFront[2][0]
+        
+        self.faceFront[0][0] = oldUp[0]
+        self.faceFront[1][0] = oldUp[1]
+        self.faceFront[2][0] = oldUp[2]
 
     def turnRight(self) -> None:
-       None
+        self.faceRight = self.turn_face(self.faceRight)
+        
+        oldUp = [self.faceUp[0][2], self.faceUp[1][2], self.faceUp[2][2]]
+        
+        self.faceUp[0][2] = self.faceFront[0][2]
+        self.faceUp[1][2] = self.faceFront[1][2]
+        self.faceUp[2][2] = self.faceFront[2][2]
+        
+        self.faceFront[0][2] = self.faceDown[0][2]
+        self.faceFront[1][2] = self.faceDown[1][2]
+        self.faceFront[2][2] = self.faceDown[2][2]
+        
+        self.faceDown[0][2] = self.faceBack[2][0]
+        self.faceDown[1][2] = self.faceBack[1][0]
+        self.faceDown[2][2] = self.faceBack[0][0]
+        
+        self.faceBack[2][0] = oldUp[0]
+        self.faceBack[1][0] = oldUp[1]
+        self.faceBack[0][0] = oldUp[2]
 
     def turn_face(self, face) -> list[list[str]]:
+        oldFace = [row.copy() for row in face]
+
+        face[0][0] = oldFace[2][0]
+        face[0][1] = oldFace[1][0]
+        face[0][2] = oldFace[0][0]
+        face[1][0] = oldFace[2][1]
+        face[1][1] = oldFace[1][1]
+        face[1][2] = oldFace[0][1]
+        face[2][0] = oldFace[2][2]
+        face[2][1] = oldFace[1][2]
+        face[2][2] = oldFace[0][2]
+
         return face
 
-    # Turn counter clockwise - Aure
+    # Turn counter clockwise
 
     def returnUp(self) -> None:
         oldUp = [row.copy() for row in self.faceUp]
@@ -208,7 +305,6 @@ class Cube:
 
         return face
 
-    
     def shuffle(self, nb_movements):
        allActions = [self.turnUp,
                     self.turnBack,
@@ -227,7 +323,3 @@ class Cube:
           randomMove = random.choice(allActions)
           print(randomMove.__name__)
           randomMove()
-
-
-          
-
