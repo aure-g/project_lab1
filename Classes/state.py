@@ -9,7 +9,8 @@ class State:
         self.nbrActions: int = nbActions
         self.pere: State | None = parentState
         self.actionPere: ActionType = actionType # The action which led to the current state from the pere(father) state
-        self.valH: None = None # Number of moves left to solve the cube
+        from .heuristiclabel import HeuristicLabel
+        self.valH: int = HeuristicLabel.value(self) # Estimated number of moves left to solve the cube
         
     # Function which calculates the 12 next possible moves the children states
     def expand(self) -> list['State']:

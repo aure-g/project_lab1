@@ -5,15 +5,16 @@ from Enumerations.action_type import ActionType
 class Astar:
     def __init__(self, initial_state):
         self.state: State = initial_state # The cube once scrambled, before the first moves to solve it
-        self.explored: set[State] = set()
+        # We store explored cubes as strings to compare configurations,
+        # not Python object identities.
+        self.explored: set[str] = set()
         self.frontier = PriorityQueueState()
 
     def add(self, state):
-        if (not self.contains(state)):
-            self.explored.add(state)
+        self.explored.add(str(state.cube))
 
     def contains(self, state):
-        return state in self.explored
+        return str(state.cube) in self.explored
     
     # Returns the set of actions needed to reach the solution
     def solve(self) -> list[ActionType]:
