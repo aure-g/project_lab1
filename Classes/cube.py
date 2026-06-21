@@ -1,6 +1,7 @@
 import random
 class Cube:
     def __init__(self):
+        """Initialize a solved cube and scramble it with a few random moves."""
         self.faceUp: list[list[str]] = [[]]
         self.faceDown: list[list[str]] = [[]]
         self.faceFront: list[list[str]] = [[]]
@@ -8,7 +9,7 @@ class Cube:
         self.faceLeft: list[list[str]] = [[]]
         self.faceRight: list[list[str]] = [[]]
 
-        COLORS = ['W', 'Y', 'R', 'O', 'G', 'B']
+        COLORS = ['W', 'Y', 'G', 'B', 'O', 'R']
 
         NB_SQUARES: int = 9
 
@@ -25,10 +26,11 @@ class Cube:
         self.faceLeft = [colors_square[36:39], colors_square[39:42], colors_square[42:45]]
         self.faceRight = [colors_square[45:48], colors_square[48:51], colors_square[51:54]]
 
-        number_random_moves = random.randint(5,6) # can be changed depends if we give the choice to the user ?
+        number_random_moves = random.randint(4,5) # A* en Python ne peut pas résoudre > 4-5 mouvements en temps raisonnable
         self.shuffle(number_random_moves)
 
     def isSolved(self) -> bool:
+        """Return True if every face is a single uniform color."""
         for face in [self.faceUp, self.faceDown, self.faceFront, self.faceBack, self.faceLeft, self.faceRight]:
             currentColor = face[0][0]
             for i in range(3):
@@ -38,6 +40,7 @@ class Cube:
         return True
 
     def __str__(self) -> str:
+        """Return a human-readable side-by-side display of all 6 faces."""
         # Displays 3x3 squares, the 6 sides on the same line
         result = " UP     DOWN    FRONT    BACK   LEFT   RIGHT\n"
         for i in range(3):
@@ -49,8 +52,8 @@ class Cube:
             result += " ".join(self.faceRight[i]) + "\n"
         return result
 
-    # For the push function in priorityqueuestate we need to compare 2 cubes
     def __eq__(self, other_cube) -> bool:
+        """Return True if both cubes have identical sticker configurations on all faces."""
         if not isinstance(other_cube, Cube):
             return False
         return (self.faceUp == other_cube.faceUp and
@@ -60,9 +63,8 @@ class Cube:
                 self.faceLeft == other_cube.faceLeft and 
                 self.faceRight == other_cube.faceRight)
 
-    # Turn clockwise
-
     def turnUp(self) -> None:
+        """Rotate the top face 90° clockwise (U move)."""
         self.faceUp = self.turn_face(self.faceUp)
 
         oldFrontRow = self.faceFront[0].copy()
@@ -72,6 +74,7 @@ class Cube:
         self.faceLeft[0] = oldFrontRow
 
     def turnDown(self) -> None:
+        """Rotate the bottom face 90° clockwise (D move)."""
         self.faceDown = self.turn_face(self.faceDown)
 
         oldFrontRow = self.faceFront[2].copy()
@@ -81,6 +84,7 @@ class Cube:
         self.faceRight[2] = oldFrontRow
 
     def turnFront(self) -> None:
+        """Rotate the front face 90° clockwise (F move)."""
         self.faceFront = self.turn_face(self.faceFront)
 
         oldUp = [self.faceUp[2][0], self.faceUp[2][1], self.faceUp[2][2]]
@@ -102,6 +106,7 @@ class Cube:
         self.faceRight[2][0] = oldUp[2]
 
     def turnBack(self) -> None:
+        """Rotate the back face 90° clockwise (B move)."""
         self.faceBack = self.turn_face(self.faceBack)
 
         oldUp = [self.faceUp[0][0], self.faceUp[0][1], self.faceUp[0][2]]
@@ -123,6 +128,7 @@ class Cube:
         self.faceLeft[2][0] = oldUp[0]
 
     def turnLeft(self) -> None:
+        """Rotate the left face 90° clockwise (L move)."""
         self.faceLeft = self.turn_face(self.faceLeft)
         
         oldUp = [self.faceUp[0][0], self.faceUp[1][0], self.faceUp[2][0]]
@@ -144,6 +150,7 @@ class Cube:
         self.faceFront[2][0] = oldUp[2]
 
     def turnRight(self) -> None:
+        """Rotate the right face 90° clockwise (R move)."""
         self.faceRight = self.turn_face(self.faceRight)
         
         oldUp = [self.faceUp[0][2], self.faceUp[1][2], self.faceUp[2][2]]
@@ -165,6 +172,7 @@ class Cube:
         self.faceBack[0][0] = oldUp[2]
 
     def turn_face(self, face) -> list[list[str]]:
+        """Rotate a 3×3 face matrix 90° clockwise in-place and return it."""
         oldFace = [row.copy() for row in face]
 
         face[0][0] = oldFace[2][0]
@@ -179,10 +187,8 @@ class Cube:
 
         return face
 
-    # Turn counter clockwise
-
     def returnUp(self) -> None:
-        oldUp = [row.copy() for row in self.faceUp]
+        """Rotate the top face 90° counter-clockwise (U' move)."""
         self.faceUp = self.return_face(self.faceUp)
         
         oldFrontRow = self.faceFront[0].copy()
@@ -192,7 +198,7 @@ class Cube:
         self.faceRight[0] = oldFrontRow
 
     def returnDown(self) -> None:
-        oldDown = [row.copy() for row in self.faceDown]
+        """Rotate the bottom face 90° counter-clockwise (D' move)."""
         self.faceDown = self.return_face(self.faceDown)
         
         oldFrontRow = self.faceFront[2].copy()
@@ -202,7 +208,7 @@ class Cube:
         self.faceLeft[2] = oldFrontRow
 
     def returnFront(self) -> None:
-        oldFront = [row.copy() for row in self.faceFront]
+        """Rotate the front face 90° counter-clockwise (F' move)."""
         self.faceFront = self.return_face(self.faceFront)
         
         oldUp = [self.faceUp[2][0], self.faceUp[2][1], self.faceUp[2][2]]
@@ -224,7 +230,7 @@ class Cube:
         self.faceLeft[0][2] = oldUp[2]
 
     def returnBack(self) -> None:
-        oldBack = [row.copy() for row in self.faceBack]
+        """Rotate the back face 90° counter-clockwise (B' move)."""
         self.faceBack = self.return_face(self.faceBack)
         
         oldUp = [self.faceUp[0][0], self.faceUp[0][1], self.faceUp[0][2]]
@@ -246,7 +252,7 @@ class Cube:
         self.faceRight[0][2] = oldUp[0]
 
     def returnLeft(self) -> None:
-        oldLeft = [row.copy() for row in self.faceLeft]
+        """Rotate the left face 90° counter-clockwise (L' move)."""
         self.faceLeft = self.return_face(self.faceLeft)
         
         oldUp = [self.faceUp[0][0], self.faceUp[1][0], self.faceUp[2][0]]
@@ -268,8 +274,7 @@ class Cube:
         self.faceBack[2][2] = oldUp[0]
 
     def returnRight(self) -> None:
-        oldRight = [row.copy() for row in self.faceRight]
-        
+        """Rotate the right face 90° counter-clockwise (R' move)."""
         self.faceRight = self.return_face(self.faceRight)
         
         oldUp = [self.faceUp[0][2], self.faceUp[1][2], self.faceUp[2][2]]
@@ -291,6 +296,7 @@ class Cube:
         self.faceFront[2][2] = oldUp[2]
 
     def return_face(self, face) -> list[list[str]]:
+        """Rotate a 3×3 face matrix 90° counter-clockwise in-place and return it."""
         oldFace = [row.copy() for row in face]
 
         face[0][0] = oldFace[0][2]
@@ -306,20 +312,20 @@ class Cube:
         return face
 
     def shuffle(self, nb_movements):
-       allActions = [self.turnUp,
-                    self.turnBack,
-                    self.turnRight, 
-                    self.turnDown, 
-                    self.turnLeft, 
-                    self.turnFront, 
-                    self.returnBack, 
-                    self.returnDown,
-                    self.returnRight,
-                    self.returnLeft,
-                    self.returnUp, 
-                    self.returnFront]
-       
-       for _ in range(nb_movements):
-          randomMove = random.choice(allActions)
-          print(randomMove.__name__)
-          randomMove()
+        """Apply nb_movements random moves to scramble the cube."""
+        allActions = [self.turnUp,
+                      self.turnBack,
+                      self.turnRight,
+                      self.turnDown,
+                      self.turnLeft,
+                      self.turnFront,
+                      self.returnBack,
+                      self.returnDown,
+                      self.returnRight,
+                      self.returnLeft,
+                      self.returnUp,
+                      self.returnFront]
+
+        for _ in range(nb_movements):
+            randomMove = random.choice(allActions)
+            randomMove()

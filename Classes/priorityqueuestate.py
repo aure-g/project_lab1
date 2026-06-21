@@ -2,13 +2,16 @@ from .state import State
 
 class PriorityQueueState:
     def __init__(self):
+        """Initialize an empty priority queue storing (State, cost) tuples."""
         # Stored in the queue as tuples (cube_state, state_cost)
         self.queue = []
 
     def is_empty(self):
+        """Return True if the queue contains no states."""
         return len(self.queue)== 0
 
     def push(self, new_state:State):
+        """Insert new_state or update it if a cheaper path to the same cube config exists."""
         cost_to_goal = new_state.valH if new_state.valH is not None else 0
         new_state_cost = new_state.nbrActions + cost_to_goal
 
@@ -24,13 +27,14 @@ class PriorityQueueState:
         self.sort()
     
     def sort(self):
+        """Sort the queue in ascending order of total cost f = g + h."""
         # we sort using only the cost, we do not sort the tuples as a whole
         self.queue.sort(key= lambda x : x[1])
 
-    # returns and remove the first element of the queue, that is the state with the lowest cost
-    def pop(self) -> State :
+    def pop(self) -> State|None :
+        """Remove and return the state with the lowest f-cost, or None if empty."""
         if (not self.is_empty()):
-            best_state, best_cost = self.queue.pop(0) # necessarly the first element (aka the head of the queue) because it is sorted based on cost
+            best_state, best_cost = self.queue.pop(0)
             return best_state
         return None
 

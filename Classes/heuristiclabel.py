@@ -5,6 +5,7 @@ class HeuristicLabel:
 
     @staticmethod
     def value(state: State) -> int:
+        """Estimate remaining moves via Manhattan distance of stickers to their target face, divided by 8."""
         cube = state.cube
 
         # Target face for each color: (axis, value)
