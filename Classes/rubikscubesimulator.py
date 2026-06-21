@@ -1,9 +1,10 @@
 import time
+import threading
 import tkinter as tk
 from tkinter import messagebox
 
 from .cube import Cube
-from .state import State
+from .state import State, ACTIONS
 from .astar import Astar
 from Enumerations.action_type import ActionType
 
@@ -20,21 +21,23 @@ COLOR_MAP = {
 
 # Size of a single sticker on screen (in pixels)
 TILE = 35
+FACE_SIZE = 3           # stickers per side of a face
+BUTTONS_PER_ROW = 6    # move buttons per row
+ANIMATION_DELAY_MS = 500    # milliseconds between each animated move during solve playback
 
 
 class RubiksCubeSimulator:
     def __init__(self):
+        """Build the tkinter window, canvas, move buttons, and draw the initial cube state."""
         self.cube = Cube()
 
         self.window = tk.Tk()
         self.window.title("Rubik's Cube Simulator")
 
-        # Canvas where we draw the unfolded cube (cross layout)
-        # 4 faces wide x 3 faces tall = 12 x 9 stickers
         self.canvas = tk.Canvas(
             self.window,
-            width=12 * TILE,
-            height=9 * TILE,
+            width=4 * FACE_SIZE * TILE,
+            height=3 * FACE_SIZE * TILE,
             bg='lightgray',
         )
         self.canvas.pack(padx=10, pady=10)
@@ -59,7 +62,7 @@ class RubiksCubeSimulator:
                 width=4,
                 command=lambda a=action: self.actionPerformed(a),
             )
-            btn.grid(row=i // 6, column=i % 6, padx=2, pady=2)
+            btn.grid(row=i // BUTTONS_PER_ROW, column=i % BUTTONS_PER_ROW, padx=2, pady=2)
 
         # Shuffle and Solve buttons on a separate frame
         action_frame = tk.Frame(self.window)
@@ -71,7 +74,7 @@ class RubiksCubeSimulator:
         ).grid(row=0, column=0, padx=5)
 
         tk.Button(
-            action_frame, text="Solve", width=10, bg='lightgreen',
+            action_frame, text="Solve", width=10,
             command=lambda: self.actionPerformed("solve"),
         ).grid(row=0, column=1, padx=5)
 
@@ -81,18 +84,19 @@ class RubiksCubeSimulator:
         """Draw the 6 faces of the cube in a cross layout."""
         self.canvas.delete("all")
 
+        S = FACE_SIZE
         face_positions = {
-            'U': (3, 0, self.cube.faceUp),
-            'L': (0, 3, self.cube.faceLeft),
-            'F': (3, 3, self.cube.faceFront),
-            'R': (6, 3, self.cube.faceRight),
-            'B': (9, 3, self.cube.faceBack),
-            'D': (3, 6, self.cube.faceDown),
+            'U': (  S, 0, self.cube.faceUp),
+            'L': (  0, S, self.cube.faceLeft),
+            'F': (  S, S, self.cube.faceFront),
+            'R': (2*S, S, self.cube.faceRight),
+            'B': (3*S, S, self.cube.faceBack),
+            'D': (  S, 2*S, self.cube.faceDown),
         }
 
         for col_offset, row_offset, face in face_positions.values():
-            for i in range(3):
-                for j in range(3):
+            for i in range(FACE_SIZE):
+                for j in range(FACE_SIZE):
                     x1 = (col_offset + j) * TILE
                     y1 = (row_offset + i) * TILE
                     x2 = x1 + TILE
@@ -104,23 +108,12 @@ class RubiksCubeSimulator:
 
     def apply_action(self, action: ActionType):
         """Apply a single move to the cube."""
-        if action == ActionType.TURN_UP:      self.cube.turnUp()
-        elif action == ActionType.TURN_LEFT:  self.cube.turnLeft()
-        elif action == ActionType.TURN_FRONT: self.cube.turnFront()
-        elif action == ActionType.TURN_RIGHT: self.cube.turnRight()
-        elif action == ActionType.TURN_DOWN:  self.cube.turnDown()
-        elif action == ActionType.TURN_BACK:  self.cube.turnBack()
-        elif action == ActionType.RETURN_UP:      self.cube.returnUp()
-        elif action == ActionType.RETURN_LEFT:    self.cube.returnLeft()
-        elif action == ActionType.RETURN_FRONT:   self.cube.returnFront()
-        elif action == ActionType.RETURN_RIGHT:   self.cube.returnRight()
-        elif action == ActionType.RETURN_DOWN:    self.cube.returnDown()
-        elif action == ActionType.RETURN_BACK:    self.cube.returnBack()
+        ACTIONS[action](self.cube)
 
     def actionPerformed(self, action):
         """Called every time the user presses a button."""
         if action == "shuffle":
-            self.cube.shuffle(10)
+            self.cube = Cube()  # repart d'un cube résolu et le mélange via le constructeur
             self.draw_cube()
         elif action == "solve":
             self.solve()
@@ -129,25 +122,30 @@ class RubiksCubeSimulator:
             self.draw_cube()
 
     def solve(self):
-        """Launch A* on the current cube, then play the moves with animation."""
+        """Lance A* dans un thread séparé pour ne pas geler l'interface."""
         if self.cube.isSolved():
             messagebox.showinfo("Solve", "The cube is already solved!")
             return
 
         initial_state = State(self.cube, 0, None, None)
-        astar = Astar(initial_state)
+        solver = Astar(initial_state)
 
-        start = time.time()
-        moves = astar.solve()
-        elapsed = time.time() - start
-        print(f"Time to solve: {elapsed:.2f}s")
+        def run():
+            start = time.time()
+            moves = solver.solve()
+            elapsed = time.time() - start
+            print(f"[Astar] Time to solve: {elapsed:.2f}s")
+            # tkinter n'est pas thread-safe : on repasse sur le thread principal via after()
+            self.window.after(0, lambda: self._on_solved(moves))
 
+        threading.Thread(target=run, daemon=True).start()
+
+    def _on_solved(self, moves):
+        """Appelé sur le thread principal une fois A* terminé."""
         if moves is None:
             messagebox.showinfo("Solve", "No solution found.")
             return
-
-        print(f"Solution found in {len(moves)} moves: "
-              f"{[m.name for m in moves]}")
+        print(f"Solution found in {len(moves)} moves: {[m.name for m in moves]}")
         self.play_moves(moves, 0)
 
     def play_moves(self, moves, index):
@@ -157,14 +155,4 @@ class RubiksCubeSimulator:
             return
         self.apply_action(moves[index])
         self.draw_cube()
-        # 500 ms delay before the next move
-        self.window.after(500, lambda: self.play_moves(moves, index + 1))
-
-
-def main():
-    sim = RubiksCubeSimulator()
-    sim.window.mainloop()
-
-
-if __name__ == "__main__":
-    main()
+        self.window.after(ANIMATION_DELAY_MS, lambda: self.play_moves(moves, index + 1))
