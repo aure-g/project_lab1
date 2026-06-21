@@ -23,15 +23,32 @@ COLOR_MAP = {
 FACE_SIZE = 3           # stickers per side of a face
 ANIMATION_DELAY_MS = 500    # milliseconds between each animated move during solve playback
 
-# Isometric projection vectors for one sticker edge (30° iso angle)
+# Isometric projection: elevation angle of the horizontal-plane edges (the vertical
+# edges always stay vertical). Both cubes use the same angle/proportions; only the
+# orientation differs. `flip=True` draws the anchor face at the BOTTOM of the
+# silhouette (apex pointing down, the two side faces hanging upward from it) instead
+# of at the top, giving a "viewed from below" look with identical proportions.
 ISO_TILE = 36
-_RIGHT_VEC = (ISO_TILE * math.cos(math.radians(30)), ISO_TILE * math.sin(math.radians(30)))
-_LEFT_VEC = (-_RIGHT_VEC[0], _RIGHT_VEC[1])
-_DOWN_VEC = (0, ISO_TILE)
+ISO_ANGLE = 30
 
-# Bounding box of a single iso cube drawing, used to lay out the two cubes side by side
-ISO_CUBE_WIDTH = round(6 * _RIGHT_VEC[0])
-ISO_CUBE_HEIGHT = round(3 * _RIGHT_VEC[1] + 3 * _DOWN_VEC[1])
+
+def _iso_vectors(angle_deg, flip=False):
+    """Return (right_vec, left_vec, down_vec) for one sticker edge at the given elevation angle."""
+    right_vec = (ISO_TILE * math.cos(math.radians(angle_deg)), ISO_TILE * math.sin(math.radians(angle_deg)))
+    down_vec = (0, ISO_TILE)
+    if flip:
+        right_vec = (right_vec[0], -right_vec[1])
+        down_vec = (0, -ISO_TILE)
+    left_vec = (-right_vec[0], right_vec[1])
+    return right_vec, left_vec, down_vec
+
+
+def _iso_cube_size(right_vec, down_vec):
+    """Return the (width, height) bounding box of an iso cube drawn with these vectors."""
+    width = round(6 * right_vec[0])
+    height = round(3 * abs(right_vec[1]) + 3 * abs(down_vec[1]))
+    return width, height
+
 
 ISO_MARGIN = 55       # room around the cubes for the face-control clusters
 ISO_GAP = 140          # horizontal gap between the two iso cubes (fits two facing clusters)
@@ -48,53 +65,73 @@ def _draw_sticker(canvas, p0, p1, p2, p3, color_code):
     canvas.create_polygon(*p0, *p1, *p2, *p3, fill=COLOR_MAP[color_code], outline='black', width=2)
 
 
-def _draw_iso_cube(canvas, ox, oy, top_face, front_face, right_face):
-    """Draw one isometric cube: top_face as the top rhombus, front_face/right_face hanging below it."""
+def _draw_iso_cube(canvas, ox, oy, top_face, front_face, right_face, right_vec, left_vec, down_vec, flip=False):
+    """Draw one isometric cube: top_face as the anchor rhombus, front_face/right_face hanging from it.
+
+    Cube's own convention, going clockwise Front->Right->Back->Left->Front: every side
+    face's row 0 is adjacent to Up, row 2 to Down; its col 0 is adjacent to its counter-
+    clockwise neighbor, col 2 to its clockwise neighbor. The drawing always has the
+    hanging faces' row 0 touching the anchor rhombus and the right-hanging face's col 0
+    touching the rhombus (col 2 touching the front-hanging face). So:
+    - when the anchor is Down (flip=True), the row order of both hanging faces must be
+      reversed, otherwise the Up-adjacent row (changed by U turns) is drawn next to Down;
+    - the right-hanging face's column order must ALWAYS be reversed, since its col 0
+      (its counter-clockwise neighbor, e.g. Front for the Right face) needs to touch the
+      front-hanging face, not the open margin;
+    - the anchor rhombus's own column order must be reversed too when flip=True, so its
+      column adjacent to the right-hanging face's content lines up with that edge.
+    """
     origin = (ox, oy)
 
-    # Top face: row axis along _LEFT_VEC, column axis along _RIGHT_VEC
+    # Top face: row axis along left_vec, column axis along right_vec
     for row in range(FACE_SIZE):
         for col in range(FACE_SIZE):
-            p0 = _vec_add(_vec_add(origin, _LEFT_VEC, row), _RIGHT_VEC, col)
-            p1 = _vec_add(p0, _LEFT_VEC)
-            p2 = _vec_add(p1, _RIGHT_VEC)
-            p3 = _vec_add(p0, _RIGHT_VEC)
-            _draw_sticker(canvas, p0, p1, p2, p3, top_face[row][col])
+            p0 = _vec_add(_vec_add(origin, left_vec, row), right_vec, col)
+            p1 = _vec_add(p0, left_vec)
+            p2 = _vec_add(p1, right_vec)
+            p3 = _vec_add(p0, right_vec)
+            face_col = FACE_SIZE - 1 - col if flip else col
+            _draw_sticker(canvas, p0, p1, p2, p3, top_face[row][face_col])
 
     # Face hanging from the row=FACE_SIZE edge of the top face
-    front_origin = _vec_add(origin, _LEFT_VEC, FACE_SIZE)
+    front_origin = _vec_add(origin, left_vec, FACE_SIZE)
     for row in range(FACE_SIZE):
         for col in range(FACE_SIZE):
-            p0 = _vec_add(_vec_add(front_origin, _RIGHT_VEC, col), _DOWN_VEC, row)
-            p1 = _vec_add(p0, _DOWN_VEC)
-            p2 = _vec_add(p1, _RIGHT_VEC)
-            p3 = _vec_add(p0, _RIGHT_VEC)
-            _draw_sticker(canvas, p0, p1, p2, p3, front_face[row][col])
+            p0 = _vec_add(_vec_add(front_origin, right_vec, col), down_vec, row)
+            p1 = _vec_add(p0, down_vec)
+            p2 = _vec_add(p1, right_vec)
+            p3 = _vec_add(p0, right_vec)
+            face_row = FACE_SIZE - 1 - row if flip else row
+            _draw_sticker(canvas, p0, p1, p2, p3, front_face[face_row][col])
 
     # Face hanging from the col=FACE_SIZE edge of the top face
-    right_origin = _vec_add(origin, _RIGHT_VEC, FACE_SIZE)
+    right_origin = _vec_add(origin, right_vec, FACE_SIZE)
     for row in range(FACE_SIZE):
         for col in range(FACE_SIZE):
-            p0 = _vec_add(_vec_add(right_origin, _LEFT_VEC, col), _DOWN_VEC, row)
-            p1 = _vec_add(p0, _DOWN_VEC)
-            p2 = _vec_add(p1, _LEFT_VEC)
-            p3 = _vec_add(p0, _LEFT_VEC)
-            _draw_sticker(canvas, p0, p1, p2, p3, right_face[row][col])
+            p0 = _vec_add(_vec_add(right_origin, left_vec, col), down_vec, row)
+            p1 = _vec_add(p0, down_vec)
+            p2 = _vec_add(p1, left_vec)
+            p3 = _vec_add(p0, left_vec)
+            face_row = FACE_SIZE - 1 - row if flip else row
+            face_col = FACE_SIZE - 1 - col
+            _draw_sticker(canvas, p0, p1, p2, p3, right_face[face_row][face_col])
 
 
-def _iso_anchors(ox, oy):
+def _iso_anchors(ox, oy, right_vec, left_vec, down_vec):
     """Return the (top, front, right) anchor points for an iso cube's face-control clusters.
 
     Each anchor sits just outside the face's outer edge: nothing else is drawn there,
-    since both hanging faces meet the top rhombus at those edges.
+    since both hanging faces meet the anchor rhombus at those edges.
     """
     origin = (ox, oy)
-    front_origin = _vec_add(origin, _LEFT_VEC, FACE_SIZE)
-    right_origin = _vec_add(origin, _RIGHT_VEC, FACE_SIZE)
+    front_origin = _vec_add(origin, left_vec, FACE_SIZE)
+    right_origin = _vec_add(origin, right_vec, FACE_SIZE)
 
-    top_anchor = (ox, oy - ARROW_OFFSET)
-    front_anchor = (front_origin[0] - ARROW_OFFSET, front_origin[1] + 1.5 * ISO_TILE)
-    right_anchor = (right_origin[0] + ARROW_OFFSET, right_origin[1] + 1.5 * ISO_TILE)
+    # The rhombus extends toward increasing right_vec[1]; its free side is the opposite way.
+    outward_sign = 1 if right_vec[1] >= 0 else -1
+    top_anchor = (ox, oy - ARROW_OFFSET * outward_sign)
+    front_anchor = (front_origin[0] - ARROW_OFFSET, front_origin[1] + 1.5 * down_vec[1])
+    right_anchor = (right_origin[0] + ARROW_OFFSET, right_origin[1] + 1.5 * down_vec[1])
     return top_anchor, front_anchor, right_anchor
 
 
@@ -103,13 +140,21 @@ class RubiksCubeSimulator:
         """Build the tkinter window, canvas, move buttons, and draw the initial cube state."""
         self.cube = Cube()
 
+        # Up/Front/Right cube has its anchor face on top. Down/Back/Left uses the same
+        # angle/proportions, just flipped so the anchor face sits at the bottom instead.
+        self.vec1 = _iso_vectors(ISO_ANGLE)
+        self.vec2 = _iso_vectors(ISO_ANGLE, flip=True)
+        self.size1 = _iso_cube_size(self.vec1[0], self.vec1[2])
+        self.size2 = _iso_cube_size(self.vec2[0], self.vec2[2])
+        self.area_height = max(self.size1[1], self.size2[1])
+
         self.window = tk.Tk()
         self.window.title("Rubik's Cube Simulator")
 
         self.canvas = tk.Canvas(
             self.window,
-            width=2 * ISO_CUBE_WIDTH + ISO_GAP + 2 * ISO_MARGIN,
-            height=ISO_LABEL_HEIGHT + ISO_MARGIN + ISO_CUBE_HEIGHT + ISO_MARGIN,
+            width=2 * ISO_MARGIN + self.size1[0] + ISO_GAP + self.size2[0],
+            height=ISO_LABEL_HEIGHT + ISO_MARGIN + self.area_height + ISO_MARGIN,
             bg='lightgray',
         )
         self.canvas.pack(padx=10, pady=10)
@@ -125,9 +170,14 @@ class RubiksCubeSimulator:
         ).grid(row=0, column=0, padx=5)
 
         tk.Button(
+            action_frame, text="Reset", width=10,
+            command=lambda: self.actionPerformed("reset"),
+        ).grid(row=0, column=1, padx=5)
+
+        tk.Button(
             action_frame, text="Solve", width=10,
             command=lambda: self.actionPerformed("solve"),
-        ).grid(row=0, column=1, padx=5)
+        ).grid(row=0, column=2, padx=5)
 
         self.draw_cube()
 
@@ -135,15 +185,19 @@ class RubiksCubeSimulator:
         """Draw two isometric views of the cube so all 6 faces are visible in 3D."""
         self.canvas.delete("all")
 
-        ox1 = ISO_MARGIN + ISO_CUBE_WIDTH // 2
-        ox2 = ox1 + ISO_CUBE_WIDTH + ISO_GAP
-        oy = ISO_LABEL_HEIGHT + ISO_MARGIN
+        ox1 = ISO_MARGIN + self.size1[0] // 2
+        ox2 = ISO_MARGIN + self.size1[0] + ISO_GAP + self.size2[0] // 2
+        # Both cubes share a bottom baseline: cube 1's apex sits on top of its own
+        # height, cube 2's apex (flipped, at the bottom) sits right on the baseline.
+        y_bottom = ISO_LABEL_HEIGHT + ISO_MARGIN + self.area_height
+        oy1 = y_bottom - self.size1[1]
+        oy2 = y_bottom
 
         self.canvas.create_text(
             ox1, ISO_LABEL_HEIGHT // 2, text="Up / Front / Right", font=("Arial", 10, "bold"),
         )
-        _draw_iso_cube(self.canvas, ox1, oy, self.cube.faceUp, self.cube.faceFront, self.cube.faceRight)
-        top1, front1, right1 = _iso_anchors(ox1, oy)
+        _draw_iso_cube(self.canvas, ox1, oy1, self.cube.faceUp, self.cube.faceFront, self.cube.faceRight, *self.vec1)
+        top1, front1, right1 = _iso_anchors(ox1, oy1, *self.vec1)
         self._add_face_controls(top1, "UP", ActionType.TURN_UP, ActionType.RETURN_UP)
         self._add_face_controls(front1, "FRONT", ActionType.TURN_FRONT, ActionType.RETURN_FRONT)
         self._add_face_controls(right1, "RIGHT", ActionType.TURN_RIGHT, ActionType.RETURN_RIGHT)
@@ -151,8 +205,10 @@ class RubiksCubeSimulator:
         self.canvas.create_text(
             ox2, ISO_LABEL_HEIGHT // 2, text="Down / Back / Left", font=("Arial", 10, "bold"),
         )
-        _draw_iso_cube(self.canvas, ox2, oy, self.cube.faceDown, self.cube.faceBack, self.cube.faceLeft)
-        top2, front2, right2 = _iso_anchors(ox2, oy)
+        _draw_iso_cube(
+            self.canvas, ox2, oy2, self.cube.faceDown, self.cube.faceBack, self.cube.faceLeft, *self.vec2, flip=True,
+        )
+        top2, front2, right2 = _iso_anchors(ox2, oy2, *self.vec2)
         self._add_face_controls(top2, "DOWN", ActionType.TURN_DOWN, ActionType.RETURN_DOWN)
         self._add_face_controls(front2, "BACK", ActionType.TURN_BACK, ActionType.RETURN_BACK)
         self._add_face_controls(right2, "LEFT", ActionType.TURN_LEFT, ActionType.RETURN_LEFT)
@@ -161,8 +217,8 @@ class RubiksCubeSimulator:
         """Draw a face-name label with a clockwise/counter-clockwise arrow pair below it, clickable."""
         cx, cy = anchor
         self.canvas.create_text(cx, cy - 8, text=face_name, font=("Arial", 8, "bold"))
-        cw_id = self.canvas.create_text(cx - 10, cy + 8, text="↻", font=("Arial", 14, "bold"))
-        ccw_id = self.canvas.create_text(cx + 10, cy + 8, text="↺", font=("Arial", 14, "bold"))
+        cw_id = self.canvas.create_text(cx - 10, cy + 8, text="↻", font=("Segoe UI Symbol", 14, "bold"))
+        ccw_id = self.canvas.create_text(cx + 10, cy + 8, text="↺", font=("Segoe UI Symbol", 14, "bold"))
 
         self.canvas.tag_bind(cw_id, "<Button-1>", lambda e: self.actionPerformed(cw_action))
         self.canvas.tag_bind(ccw_id, "<Button-1>", lambda e: self.actionPerformed(ccw_action))
@@ -177,7 +233,10 @@ class RubiksCubeSimulator:
     def actionPerformed(self, action):
         """Called every time the user presses a button."""
         if action == "shuffle":
-            self.cube = Cube()  # restrats from a solved cub and the shuffle via the constructor
+            self.cube.shuffle(Cube.NB_MOVE_SHUFFLE)
+            self.draw_cube()
+        elif action == "reset":
+            self.cube.reset()
             self.draw_cube()
         elif action == "solve":
             self.solve()
