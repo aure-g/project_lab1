@@ -8,27 +8,11 @@ from unittest.mock import patch
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from Classes.cube import Cube
-from Classes.state import State
+from Classes.state import State, ACTIONS
 from Classes.astar import Astar
 from Classes.heuristiclabel import HeuristicLabel
 from Classes.priorityqueuestate import PriorityQueueState
 from Enumerations.action_type import ActionType
-
-
-ACTION_METHODS: dict[ActionType, str] = {
-    ActionType.TURN_UP:      'turnUp',
-    ActionType.TURN_LEFT:    'turnLeft',
-    ActionType.TURN_FRONT:   'turnFront',
-    ActionType.TURN_RIGHT:   'turnRight',
-    ActionType.TURN_DOWN:    'turnDown',
-    ActionType.TURN_BACK:    'turnBack',
-    ActionType.RETURN_UP:    'returnUp',
-    ActionType.RETURN_LEFT:  'returnLeft',
-    ActionType.RETURN_FRONT: 'returnFront',
-    ActionType.RETURN_RIGHT: 'returnRight',
-    ActionType.RETURN_DOWN:  'returnDown',
-    ActionType.RETURN_BACK:  'returnBack',
-}
 
 
 def make_solved_cube() -> Cube:
@@ -159,13 +143,12 @@ class TestCube(unittest.TestCase):
     def test_four_turns_identity_all_moves(self):
         """Scénario : chacun des 12 mouvements appliqué 4 fois de suite.
         Attendu : le cube revient à son état initial (rotation de 360°) pour chaque mouvement."""
-        for action, method_name in ACTION_METHODS.items():
+        for action, method in ACTIONS.items():
             with self.subTest(move=action.name):
                 cube = make_solved_cube()
                 original = copy.deepcopy(cube)
-                move = getattr(cube, method_name)
                 for _ in range(4):
-                    move()
+                    method(cube)
                 self.assertEqual(cube, original)
 
     def test_reverse_pair_identity_all_moves(self):
@@ -212,10 +195,10 @@ class TestCube(unittest.TestCase):
     def test_is_solved_false_after_each_move(self):
         """Scénario : chacun des 12 mouvements appliqué seul sur un cube résolu.
         Attendu : isSolved() retourne False pour chacun (aucun mouvement trivial = no-op)."""
-        for action, method_name in ACTION_METHODS.items():
+        for action, method in ACTIONS.items():
             with self.subTest(move=action.name):
                 cube = make_solved_cube()
-                getattr(cube, method_name)()
+                method(cube)
                 self.assertFalse(cube.isSolved())
 
 
@@ -251,20 +234,20 @@ class TestHeuristicLabel(unittest.TestCase):
     def test_heuristic_non_negative_after_any_move(self):
         """Scénario : chacun des 12 mouvements appliqué seul sur un cube résolu.
         Attendu : valH >= 0 pour chaque état (la heuristique ne peut pas être négative)."""
-        for action, method_name in ACTION_METHODS.items():
+        for action, method in ACTIONS.items():
             with self.subTest(move=action.name):
                 cube = make_solved_cube()
-                getattr(cube, method_name)()
+                method(cube)
                 state = State(cube, 0, None, None)
                 self.assertGreaterEqual(state.valH, 0)
 
     def test_heuristic_positive_after_each_single_move(self):
         """Scénario : chacun des 12 mouvements appliqué seul sur un cube résolu.
         Attendu : valH > 0 pour chacun (un seul mouvement déplace au moins 8 stickers)."""
-        for action, method_name in ACTION_METHODS.items():
+        for action, method in ACTIONS.items():
             with self.subTest(move=action.name):
                 cube = make_solved_cube()
-                getattr(cube, method_name)()
+                method(cube)
                 state = State(cube, 0, None, None)
                 self.assertGreater(state.valH, 0)
 
@@ -488,7 +471,7 @@ class TestPriorityQueueState(unittest.TestCase):
 class TestAstar(unittest.TestCase):
 
     def _apply_action(self, cube: Cube, action: ActionType) -> None:
-        getattr(cube, ACTION_METHODS[action])()
+        ACTIONS[action](cube)
 
     def test_solve_already_solved(self):
         """Scénario : A* lancé sur un cube déjà résolu.
@@ -554,10 +537,10 @@ class TestAstar(unittest.TestCase):
         """Scénario : chacun des 12 mouvements appliqué seul, puis A* lancé.
         Attendu : pour chaque mouvement, appliquer la solution au cube mélangé
         produit isSolved() == True."""
-        for action, method_name in ACTION_METHODS.items():
+        for action, method in ACTIONS.items():
             with self.subTest(action=action.name):
                 cube = make_solved_cube()
-                getattr(cube, method_name)()
+                method(cube)
                 test_cube = copy.deepcopy(cube)
                 moves = Astar(State(cube, 0, None, None)).solve()
                 assert moves is not None
