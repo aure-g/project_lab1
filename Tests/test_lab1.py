@@ -2,7 +2,6 @@ import sys
 import os
 import copy
 import unittest
-from unittest.mock import patch
 
 # Ensure the project root is on sys.path so package imports work
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -16,9 +15,8 @@ from Enumerations.action_type import ActionType
 
 
 def make_solved_cube() -> Cube:
-    """Return a Cube in its solved state (shuffle bypassed)."""
-    with patch.object(Cube, 'shuffle'):
-        return Cube()
+    """Return a Cube in its solved state."""
+    return Cube()
 
 
 # ---------------------------------------------------------------------------
@@ -129,6 +127,20 @@ class TestCube(unittest.TestCase):
         """Scenario : shuffle(0) called on a solved cube.
         Expected : the cube remains solved (no moves applied)."""
         self.cube.shuffle(0)
+        self.assertTrue(self.cube.isSolved())
+
+    def test_reset_after_shuffle_returns_to_solved(self):
+        """Scenario : reset() called on a cube shuffled with several moves.
+        Expected : the cube is solved again and matches a fresh solved cube."""
+        self.cube.shuffle(Cube.NB_MOVE_SHUFFLE)
+        self.cube.reset()
+        self.assertTrue(self.cube.isSolved())
+        self.assertEqual(self.cube, make_solved_cube())
+
+    def test_reset_on_already_solved_cube_no_change(self):
+        """Scenario : reset() called on a cube already solved.
+        Expected : the cube remains solved."""
+        self.cube.reset()
         self.assertTrue(self.cube.isSolved())
 
     def test_str_returns_string(self):

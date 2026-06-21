@@ -20,7 +20,8 @@ def _solve_with_default_scramble(run_index: int, result_queue: multiprocessing.Q
     and deposit (run_index, elapsed time) in result_queue. Module-level for
     being picklable by multiprocessing (necessary for running tests
     in parallel). If the process is killed for timeout, nothing is deposited."""
-    cube = Cube(Cube.NB_MOVE_SHUFFLE)
+    cube = Cube()
+    cube.shuffle(Cube.NB_MOVE_SHUFFLE)
     start = time.perf_counter()
     moves = Astar(State(cube, 0, None, None)).solve()
     elapsed = time.perf_counter() - start

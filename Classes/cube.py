@@ -4,12 +4,12 @@ class Cube:
     NB_SQUARES: int = 9
     NB_MOVE_SHUFFLE: int = 5 # A* in Python cannot solve the cube above 4-5 moves in reasonable time thus the limit is set to 5
 
-    def __init__(self, nb_shuffle_moves: int = NB_MOVE_SHUFFLE):
-        """Initialize a solved cube and scramble it with a few random moves.
+    def __init__(self):
+        """Initialize a solved cube."""
+        self.reset()
 
-        nb_shuffle_moves: number of random moves used to scramble the cube. If
-        omitted, NB_MOVE_SHUFFLE is used.
-        """
+    def reset(self) -> None:
+        """Restore the cube to its solved state."""
         self.faceUp: list[list[str]] = [[]]
         self.faceDown: list[list[str]] = [[]]
         self.faceFront: list[list[str]] = [[]]
@@ -29,8 +29,6 @@ class Cube:
         self.faceBack = [colors_square[27:30], colors_square[30:33], colors_square[33:36]]
         self.faceLeft = [colors_square[36:39], colors_square[39:42], colors_square[42:45]]
         self.faceRight = [colors_square[45:48], colors_square[48:51], colors_square[51:54]]
-
-        self.shuffle(nb_shuffle_moves)
 
     def isSolved(self) -> bool:
         """Return True if every face is a single uniform color."""
