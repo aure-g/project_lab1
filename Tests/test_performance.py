@@ -16,11 +16,11 @@ MAX_SOLVE_SECONDS = 120.0
 
 
 def _solve_with_default_scramble(run_index: int, result_queue: multiprocessing.Queue) -> None:
-    """Mélange un cube avec Cube.DEFAUT_TRY mouvements, le résout avec A*,
+    """Mélange un cube avec Cube.NB_MOVE_SHUFFLE mouvements, le résout avec A*,
     et dépose (run_index, temps écoulé) dans result_queue. Module-level pour
     être picklable par multiprocessing (nécessaire pour exécuter les essais
     en parallèle). Si le processus est tué pour timeout, rien n'est déposé."""
-    cube = Cube(Cube.DEFAUT_TRY)
+    cube = Cube(Cube.NB_MOVE_SHUFFLE)
     start = time.perf_counter()
     moves = Astar(State(cube, 0, None, None)).solve()
     elapsed = time.perf_counter() - start
@@ -67,7 +67,7 @@ class TestAstarPerformance(unittest.TestCase):
 
         for i, elapsed in enumerate(cls.results, start=1):
             label = f"{elapsed:.3f}s" if elapsed is not None else f"TIMEOUT/ECHEC (> {MAX_SOLVE_SECONDS}s)"
-            print(f"[performance] essai {i}/{NB_RUNS} (DEFAUT_TRY={Cube.DEFAUT_TRY}) -> {label}")
+            print(f"[performance] essai {i}/{NB_RUNS} (NB_MOVE_SHUFFLE={Cube.NB_MOVE_SHUFFLE}) -> {label}")
 
     def assert_completed_in_time(self, run_index: int):
         elapsed = self.results[run_index]
@@ -81,7 +81,7 @@ def _make_test_solve_time(run_index: int):
     def test(self: TestAstarPerformance):
         self.assert_completed_in_time(run_index)
     test.__doc__ = (
-        f"Scénario : cube mélangé avec Cube.DEFAUT_TRY mouvements (essai {run_index + 1}/{NB_RUNS}).\n"
+        f"Scénario : cube mélangé avec Cube.NB_MOVE_SHUFFLE mouvements (essai {run_index + 1}/{NB_RUNS}).\n"
         f"        Attendu : A* trouve une solution en moins de MAX_SOLVE_SECONDS."
     )
     return test

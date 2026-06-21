@@ -1,7 +1,15 @@
 import random
 class Cube:
-    def __init__(self):
-        """Initialize a solved cube and scramble it with a few random moves."""
+    COLORS = ['W', 'Y', 'G', 'B', 'O', 'R']
+    NB_SQUARES: int = 9
+    NB_MOVE_SHUFFLE: int = 5 # A* en Python ne peut pas résoudre > 4-5 mouvements en temps raisonnable
+
+    def __init__(self, nb_shuffle_moves: int = NB_MOVE_SHUFFLE):
+        """Initialize a solved cube and scramble it with a few random moves.
+
+        nb_shuffle_moves: number of random moves used to scramble the cube. If
+        omitted, NB_MOVE_SHUFFLE is used.
+        """
         self.faceUp: list[list[str]] = [[]]
         self.faceDown: list[list[str]] = [[]]
         self.faceFront: list[list[str]] = [[]]
@@ -9,13 +17,9 @@ class Cube:
         self.faceLeft: list[list[str]] = [[]]
         self.faceRight: list[list[str]] = [[]]
 
-        COLORS = ['W', 'Y', 'G', 'B', 'O', 'R']
-
-        NB_SQUARES: int = 9
-
         colors_square = []
-        for color in COLORS:
-            for _ in range(NB_SQUARES):
+        for color in Cube.COLORS:
+            for _ in range(Cube.NB_SQUARES):
                 colors_square.append(color)
 
         # We begin by initializing our cube, solved
@@ -26,8 +30,7 @@ class Cube:
         self.faceLeft = [colors_square[36:39], colors_square[39:42], colors_square[42:45]]
         self.faceRight = [colors_square[45:48], colors_square[48:51], colors_square[51:54]]
 
-        number_random_moves = random.randint(4,5) # A* en Python ne peut pas résoudre > 4-5 mouvements en temps raisonnable
-        self.shuffle(number_random_moves)
+        self.shuffle(nb_shuffle_moves)
 
     def isSolved(self) -> bool:
         """Return True if every face is a single uniform color."""
