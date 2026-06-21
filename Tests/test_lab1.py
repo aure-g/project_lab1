@@ -294,7 +294,7 @@ class TestState(unittest.TestCase):
     def test_expand_all_action_types_present(self):
         """Scénario : expand() appelé sur un état quelconque.
         Attendu : les 12 ActionType distincts apparaissent chacun exactement une fois."""
-        action_types = {child.actionPere for child in self.state.expand()}
+        action_types = {child.fatherAction for child in self.state.expand()}
         self.assertEqual(action_types, set(ActionType))
 
     def test_initial_state_stores_attributes(self):
@@ -304,16 +304,16 @@ class TestState(unittest.TestCase):
         state = State(cube, 7, None, ActionType.TURN_LEFT)
         self.assertIs(state.cube, cube)
         self.assertEqual(state.nbrActions, 7)
-        self.assertIsNone(state.pere)
-        self.assertEqual(state.actionPere, ActionType.TURN_LEFT)
+        self.assertIsNone(state.father)
+        self.assertEqual(state.fatherAction, ActionType.TURN_LEFT)
 
     def test_initial_state_none_action(self):
         """Scénario : State créé avec actionType=None (état initial sans parent).
         Attendu : actionPere vaut None (pas d'erreur de type)."""
         cube = make_solved_cube()
         state = State(cube, 0, None, None)
-        self.assertIsNone(state.actionPere)
-        self.assertIsNone(state.pere)
+        self.assertIsNone(state.fatherAction)
+        self.assertIsNone(state.father)
 
     def test_expand_does_not_mutate_parent_cube(self):
         """Scénario : expand() appelé sur un état.
@@ -327,7 +327,7 @@ class TestState(unittest.TestCase):
         Attendu : chaque enfant a son attribut pere pointant vers l'état parent."""
         children = self.state.expand()
         for child in children:
-            self.assertIs(child.pere, self.state)
+            self.assertIs(child.father, self.state)
 
     def test_expand_children_distinct_cubes(self):
         """Scénario : expand() appelé sur un état.

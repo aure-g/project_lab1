@@ -2,7 +2,7 @@ import random
 class Cube:
     COLORS = ['W', 'Y', 'G', 'B', 'O', 'R']
     NB_SQUARES: int = 9
-    NB_MOVE_SHUFFLE: int = 5 # A* en Python ne peut pas résoudre > 4-5 mouvements en temps raisonnable
+    NB_MOVE_SHUFFLE: int = 5 # A* in Python cannot solve the cube above 4-5 moves in reasonable time thus the limit is set to 5
 
     def __init__(self, nb_shuffle_moves: int = NB_MOVE_SHUFFLE):
         """Initialize a solved cube and scramble it with a few random moves.

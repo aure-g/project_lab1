@@ -26,8 +26,8 @@ class State:
         """Initialize a search state with its cube config, path cost, parent, and heuristic value."""
         self.cube: Cube = cube
         self.nbrActions: int = nbActions
-        self.pere: State | None = parentState
-        self.actionPere: Optional[ActionType] = actionType # The action which led to the current state from the pere(father) state
+        self.father: State | None = parentState
+        self.fatherAction: Optional[ActionType] = actionType # The action which led to the current state from the pere(father) state
         from .heuristiclabel import HeuristicLabel
         self.valH: int = HeuristicLabel.value(self) # Estimated number of moves left to solve the cube
 

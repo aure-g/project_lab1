@@ -29,9 +29,9 @@ class Astar:
             if current_state.cube.isSolved():
                 moves = []
                 current = current_state
-                while current.pere is not None:
-                    moves.append(current.actionPere)
-                    current = current.pere 
+                while current.father is not None:
+                    moves.append(current.fatherAction)
+                    current = current.father 
                 # we added the moves in the reverse order starting from the solution
                 moves.reverse()
                 return moves
