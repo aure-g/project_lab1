@@ -16,10 +16,10 @@ MAX_SOLVE_SECONDS = 120.0
 
 
 def _solve_with_default_scramble(run_index: int, result_queue: multiprocessing.Queue) -> None:
-    """Mélange un cube avec Cube.NB_MOVE_SHUFFLE mouvements, le résout avec A*,
-    et dépose (run_index, temps écoulé) dans result_queue. Module-level pour
-    être picklable par multiprocessing (nécessaire pour exécuter les essais
-    en parallèle). Si le processus est tué pour timeout, rien n'est déposé."""
+    """Shuffle a cube with Cube.NB_MOVE_SHUFFLE moves, solve it with A*,
+    and deposit (run_index, elapsed time) in result_queue. Module-level for
+    being picklable by multiprocessing (necessary for running tests
+    in parallel). If the process is killed for timeout, nothing is deposited."""
     cube = Cube(Cube.NB_MOVE_SHUFFLE)
     start = time.perf_counter()
     moves = Astar(State(cube, 0, None, None)).solve()
@@ -38,10 +38,10 @@ class TestAstarPerformance(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Lance les NB_RUNS résolutions en parallèle (un processus par essai).
-        Un budget total de MAX_SOLVE_SECONDS est partagé entre tous les essais :
-        à l'échéance, tout processus encore actif est tué (résultat = None) au
-        lieu d'attendre sa fin naturelle, pour borner la durée de la suite."""
+        """Launches the NB_RUNS resolutions in parallel (one process per trial).
+        A total budget of MAX_SOLVE_SECONDS is shared between all trials :
+        at the deadline, any active process is killed (result = None) instead of
+        waiting for its natural end, to bound the duration of the suite."""
         result_queue: multiprocessing.Queue = multiprocessing.Queue()
         processes = [
             multiprocessing.Process(target=_solve_with_default_scramble, args=(i, result_queue))
@@ -67,22 +67,22 @@ class TestAstarPerformance(unittest.TestCase):
 
         for i, elapsed in enumerate(cls.results, start=1):
             label = f"{elapsed:.3f}s" if elapsed is not None else f"TIMEOUT/ECHEC (> {MAX_SOLVE_SECONDS}s)"
-            print(f"[performance] essai {i}/{NB_RUNS} (NB_MOVE_SHUFFLE={Cube.NB_MOVE_SHUFFLE}) -> {label}")
+            print(f"[performance] try {i}/{NB_RUNS} (NB_MOVE_SHUFFLE={Cube.NB_MOVE_SHUFFLE}) -> {label}")
 
     def assert_completed_in_time(self, run_index: int):
         elapsed = self.results[run_index]
         if elapsed is None:
-            self.fail(f"essai {run_index + 1} n'a pas terminé en moins de {MAX_SOLVE_SECONDS}s")
+            self.fail(f"try {run_index + 1} did not complete within {MAX_SOLVE_SECONDS}s")
         self.assertLess(elapsed, MAX_SOLVE_SECONDS)
 
 
 def _make_test_solve_time(run_index: int):
-    """Crée une méthode de test pour l'essai run_index (0-based)."""
+    """Creates a test method for the trial run_index (0-based)."""
     def test(self: TestAstarPerformance):
         self.assert_completed_in_time(run_index)
     test.__doc__ = (
-        f"Scénario : cube mélangé avec Cube.NB_MOVE_SHUFFLE mouvements (essai {run_index + 1}/{NB_RUNS}).\n"
-        f"        Attendu : A* trouve une solution en moins de MAX_SOLVE_SECONDS."
+        f"Scenario : cube mixed with Cube.NB_MOVE_SHUFFLE moves (try {run_index + 1}/{NB_RUNS}).\n"
+        f"        Expected : A* finds a solution in less than MAX_SOLVE_SECONDS."
     )
     return test
 

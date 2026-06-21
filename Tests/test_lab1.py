@@ -31,8 +31,8 @@ class TestCube(unittest.TestCase):
         self.cube = make_solved_cube()
 
     def test_solved_cube_has_uniform_faces(self):
-        """Scénario : cube initialisé sans mélange.
-        Attendu : chaque face contient 9 stickers de la même couleur."""
+        """Scenario : cube initialized not shuffled.
+        Expected : each face contains 9 stickers of the same color."""
         for face in [self.cube.faceUp, self.cube.faceDown, self.cube.faceFront,
                      self.cube.faceBack, self.cube.faceLeft, self.cube.faceRight]:
             color = face[0][0]
@@ -41,13 +41,13 @@ class TestCube(unittest.TestCase):
                     self.assertEqual(cell, color)
 
     def test_is_solved_true_on_solved(self):
-        """Scénario : cube dans son état résolu.
-        Attendu : isSolved() retourne True."""
+        """Scenario : cube in its solved state.
+        Expected : isSolved() returns True."""
         self.assertTrue(self.cube.isSolved())
 
     def test_is_solved_false_after_move(self):
-        """Scénario : cube résolu auquel on applique turnUp().
-        Attendu : isSolved() retourne False."""
+        """Scenario : cube in its solved state to which turnUp() is applied.
+        Expected : isSolved() returns False."""
         self.cube.turnUp()
         self.assertFalse(self.cube.isSolved())
 
@@ -60,52 +60,52 @@ class TestCube(unittest.TestCase):
         self.assertEqual(self.cube, original)
 
     def test_turn_up_return_up_identity(self):
-        """Scénario : turnUp() suivi de returnUp() sur un cube résolu.
-        Attendu : le cube revient à son état initial (opération inverse)."""
+        """Scenario : turnUp() followed by returnUp() on a solved cube.
+        Expected : the cube returns to its initial state (reverse operation)."""
         self._assert_identity(self.cube.turnUp, self.cube.returnUp)
 
     def test_turn_down_return_down_identity(self):
-        """Scénario : turnDown() suivi de returnDown() sur un cube résolu.
-        Attendu : le cube revient à son état initial (opération inverse)."""
+        """Scenario : turnDown() followed by returnDown() on a solved cube.
+        Expected : the cube returns to its initial state (reverse operation)."""
         self._assert_identity(self.cube.turnDown, self.cube.returnDown)
 
     def test_turn_front_return_front_identity(self):
-        """Scénario : turnFront() suivi de returnFront() sur un cube résolu.
-        Attendu : le cube revient à son état initial (opération inverse)."""
+        """Scenario : turnFront() followed by returnFront() on a solved cube.
+        Expected : the cube returns to its initial state (reverse operation)."""
         self._assert_identity(self.cube.turnFront, self.cube.returnFront)
 
     def test_turn_back_return_back_identity(self):
-        """Scénario : turnBack() suivi de returnBack() sur un cube résolu.
-        Attendu : le cube revient à son état initial (opération inverse)."""
+        """Scenario : turnBack() followed by returnBack() on a solved cube.
+        Expected : the cube returns to its initial state (reverse operation)."""
         self._assert_identity(self.cube.turnBack, self.cube.returnBack)
 
     def test_turn_left_return_left_identity(self):
-        """Scénario : turnLeft() suivi de returnLeft() sur un cube résolu.
-        Attendu : le cube revient à son état initial (opération inverse)."""
+        """Scenario : turnLeft() followed by returnLeft() on a solved cube.
+        Expected : the cube returns to its initial state (reverse operation)."""
         self._assert_identity(self.cube.turnLeft, self.cube.returnLeft)
 
     def test_turn_right_return_right_identity(self):
-        """Scénario : turnRight() suivi de returnRight() sur un cube résolu.
-        Attendu : le cube revient à son état initial (opération inverse)."""
+        """Scenario : turnRight() followed by returnRight() on a solved cube.
+        Expected : the cube returns to its initial state (reverse operation)."""
         self._assert_identity(self.cube.turnRight, self.cube.returnRight)
 
     def test_four_turns_identity(self):
-        """Scénario : turnUp() appliqué 4 fois de suite sur un cube résolu.
-        Attendu : le cube revient à son état initial (rotation de 360°)."""
+        """Scenario : turnUp() applied 4 times in a row on a solved cube.
+        Expected : the cube returns to its initial state (360° rotation)."""
         original = copy.deepcopy(self.cube)
         for _ in range(4):
             self.cube.turnUp()
         self.assertEqual(self.cube, original)
 
     def test_cube_equality(self):
-        """Scénario : deux cubes indépendants initialisés sans mélange.
-        Attendu : __eq__ retourne True (même configuration)."""
+        """Scenario : two independent cubes initialized without shuffling.
+        Expected : __eq__ returns True (same configuration)."""
         other = make_solved_cube()
         self.assertEqual(self.cube, other)
 
     def test_cube_inequality_after_move(self):
-        """Scénario : un cube résolu comparé à une copie après turnUp().
-        Attendu : __eq__ retourne False (configurations différentes)."""
+        """Scenario : a solved cube compared to a copy after turnUp().
+        Expected : __eq__ returns False (different configurations)."""
         other = make_solved_cube()
         other.turnUp()
         self.assertNotEqual(self.cube, other)
@@ -113,27 +113,27 @@ class TestCube(unittest.TestCase):
     # --- nouveaux tests ---
 
     def test_eq_with_non_cube_returns_false(self):
-        """Scénario : comparaison du cube avec un objet qui n'est pas un Cube.
-        Attendu : __eq__ retourne False (pas d'erreur, juste False)."""
+        """Scenario : comparison of the cube with an object that is not a Cube.
+        Expected : __eq__ returns False (no error, just False)."""
         self.assertFalse(self.cube == "not a cube")
         self.assertFalse(self.cube == 42)
         self.assertFalse(self.cube == None)
 
     def test_deepcopy_equals_original(self):
-        """Scénario : deepcopy d'un cube résolu.
-        Attendu : la copie est égale à l'original (__eq__ True)."""
+        """Scenario : deepcopy of a solved cube.
+        Expected : the copy is equal to the original (__eq__ returns True)."""
         clone = copy.deepcopy(self.cube)
         self.assertEqual(self.cube, clone)
 
     def test_shuffle_zero_no_change(self):
-        """Scénario : shuffle(0) appelé sur un cube résolu.
-        Attendu : le cube reste résolu (aucun mouvement appliqué)."""
+        """Scenario : shuffle(0) called on a solved cube.
+        Expected : the cube remains solved (no moves applied)."""
         self.cube.shuffle(0)
         self.assertTrue(self.cube.isSolved())
 
     def test_str_returns_string(self):
-        """Scénario : str() appelé sur un cube résolu.
-        Attendu : retourne une chaîne non vide contenant les étiquettes des faces."""
+        """Scenario : str() called on a solved cube.
+        Expected : returns a non-empty string containing the face labels."""
         result = str(self.cube)
         self.assertIsInstance(result, str)
         self.assertIn('UP', result)
@@ -141,8 +141,8 @@ class TestCube(unittest.TestCase):
         self.assertIn('FRONT', result)
 
     def test_four_turns_identity_all_moves(self):
-        """Scénario : chacun des 12 mouvements appliqué 4 fois de suite.
-        Attendu : le cube revient à son état initial (rotation de 360°) pour chaque mouvement."""
+        """Scenario : each of the 12 moves applied 4 times in a row.
+        Expected : the cube returns to its initial state (360° rotation) for each move."""
         for action, method in ACTIONS.items():
             with self.subTest(move=action.name):
                 cube = make_solved_cube()
@@ -152,8 +152,8 @@ class TestCube(unittest.TestCase):
                 self.assertEqual(cube, original)
 
     def test_reverse_pair_identity_all_moves(self):
-        """Scénario : pour chaque face, returnX() suivi de turnX() sur un cube résolu.
-        Attendu : le cube revient à son état initial (l'inverse dans l'autre sens = identité)."""
+        """Scenario : for each face, returnX() followed by turnX() on a solved cube.
+        Expected : the cube returns to its initial state (the opposite the other way around = identity)."""
         pairs = [
             ('returnUp',    'turnUp'),
             ('returnDown',  'turnDown'),
@@ -171,9 +171,9 @@ class TestCube(unittest.TestCase):
                 self.assertEqual(cube, original)
 
     def test_turn_up_cycles_top_rows(self):
-        """Scénario : turnUp() sur un cube résolu (Up=W, Down=Y, Front=G, Back=B, Left=O, Right=R).
-        Attendu : la rangée du haut des faces latérales tourne — Front[0] reçoit Right[0],
-        Right[0] reçoit Back[0], Back[0] reçoit Left[0], Left[0] reçoit l'ancien Front[0]."""
+        """Scenario : turnUp() on a solved cube (Up=W, Down=Y, Front=G, Back=B, Left=O, Right=R).
+        Expected : the top row of the side faces rotates — Front[0] receives Right[0],
+        Right[0] receives Back[0], Back[0] receives Left[0], Left[0] receives the original Front[0]."""
         self.cube.turnUp()
         self.assertEqual(self.cube.faceFront[0], ['R', 'R', 'R'])
         self.assertEqual(self.cube.faceRight[0], ['B', 'B', 'B'])
@@ -181,11 +181,11 @@ class TestCube(unittest.TestCase):
         self.assertEqual(self.cube.faceLeft[0],  ['G', 'G', 'G'])
 
     def test_turn_front_cycles_border(self):
-        """Scénario : turnFront() sur un cube résolu.
-        Attendu : la bordure autour de la face Front tourne — rangée basse de Up reçoit
-        la colonne droite de Left (O), colonne droite de Left reçoit rangée haute de Down (Y),
-        rangée haute de Down reçoit la colonne gauche de Right (R), colonne gauche de Right
-        reçoit l'ancienne rangée basse de Up (W)."""
+        """Scenario : turnFront() on a solved cube.
+        Expected : the border around the Front face rotates — bottom row of Up receives
+        the right column of Left (O), right column of Left receives top row of Down (Y),
+        top row of Down receives the left column of Right (R), left column of Right
+        receives the original bottom row of Up (W)."""
         self.cube.turnFront()
         self.assertEqual(self.cube.faceUp[2], ['O', 'O', 'O'])
         self.assertEqual([self.cube.faceLeft[r][2] for r in range(3)], ['Y', 'Y', 'Y'])
@@ -193,8 +193,8 @@ class TestCube(unittest.TestCase):
         self.assertEqual([self.cube.faceRight[r][0] for r in range(3)], ['W', 'W', 'W'])
 
     def test_is_solved_false_after_each_move(self):
-        """Scénario : chacun des 12 mouvements appliqué seul sur un cube résolu.
-        Attendu : isSolved() retourne False pour chacun (aucun mouvement trivial = no-op)."""
+        """Scenario : each of the 12 moves applied alone on a solved cube.
+        Expected : isSolved() returns False for each (no trivial move = no-op)."""
         for action, method in ACTIONS.items():
             with self.subTest(move=action.name):
                 cube = make_solved_cube()
@@ -209,31 +209,31 @@ class TestCube(unittest.TestCase):
 class TestHeuristicLabel(unittest.TestCase):
 
     def test_heuristic_zero_on_solved(self):
-        """Scénario : état initial sur un cube résolu (valH stocké dans state).
-        Attendu : valH == 0 (tous les stickers sont déjà à leur place cible)."""
+        """Scenario : initial state on a solved cube (valH stored in state).
+        Expected : valH == 0 (all stickers are already in their target position)."""
         cube = make_solved_cube()
         state = State(cube, 0, None, None)
         self.assertEqual(state.valH, 0)
 
     def test_heuristic_positive_after_move(self):
-        """Scénario : état après turnUp() (cube mélangé d'un mouvement).
-        Attendu : valH > 0 (des stickers ont quitté leur face cible)."""
+        """Scenario : state after turnUp() (mixed cube by one move).
+        Expected : valH > 0 (some stickers have left their target face)."""
         cube = make_solved_cube()
         cube.turnUp()
         state = State(cube, 0, None, None)
         self.assertGreater(state.valH, 0)
 
     def test_heuristic_admissible_1_move(self):
-        """Scénario : état à exactement 1 mouvement de la solution.
-        Attendu : valH <= 1 (admissibilité — la heuristique ne surestime jamais le coût réel)."""
+        """Scenario : state at exactly 1 move from the solution.
+        Expected : valH <= 1 (admissibility — the heuristic never overestimates the real cost)."""
         cube = make_solved_cube()
         cube.turnUp()
         state = State(cube, 0, None, None)
         self.assertLessEqual(state.valH, 1)
 
     def test_heuristic_non_negative_after_any_move(self):
-        """Scénario : chacun des 12 mouvements appliqué seul sur un cube résolu.
-        Attendu : valH >= 0 pour chaque état (la heuristique ne peut pas être négative)."""
+        """Scenario : each of the 12 moves applied alone on a solved cube.
+        Expected : valH >= 0 for each state (the heuristic cannot be negative)."""
         for action, method in ACTIONS.items():
             with self.subTest(move=action.name):
                 cube = make_solved_cube()
@@ -242,8 +242,8 @@ class TestHeuristicLabel(unittest.TestCase):
                 self.assertGreaterEqual(state.valH, 0)
 
     def test_heuristic_positive_after_each_single_move(self):
-        """Scénario : chacun des 12 mouvements appliqué seul sur un cube résolu.
-        Attendu : valH > 0 pour chacun (un seul mouvement déplace au moins 8 stickers)."""
+        """Scenario : each of the 12 moves applied alone on a solved cube.
+        Expected : valH > 0 for each (one move displaces at least 8 stickers)."""
         for action, method in ACTIONS.items():
             with self.subTest(move=action.name):
                 cube = make_solved_cube()
@@ -252,8 +252,8 @@ class TestHeuristicLabel(unittest.TestCase):
                 self.assertGreater(state.valH, 0)
 
     def test_heuristic_admissible_two_moves(self):
-        """Scénario : cube mélangé par exactement 2 mouvements (turnFront + turnRight).
-        Attendu : valH <= 2 (admissibilité : la heuristique ne surestime pas le coût réel)."""
+        """Scenario : cube mixed by exactly 2 moves (turnFront + turnRight).
+        Expected : valH <= 2 (admissibility : the heuristic never overestimates the real cost)."""
         cube = make_solved_cube()
         cube.turnFront()
         cube.turnRight()
@@ -261,8 +261,8 @@ class TestHeuristicLabel(unittest.TestCase):
         self.assertLessEqual(state.valH, 2)
 
     def test_heuristic_returns_int(self):
-        """Scénario : HeuristicLabel.value() appelé sur n'importe quel état.
-        Attendu : retourne un entier (int), pas un float."""
+        """Scenario : HeuristicLabel.value() called on any state.
+        Expected : returns an integer (int), not a float."""
         cube = make_solved_cube()
         cube.turnUp()
         state = State(cube, 0, None, None)
@@ -281,25 +281,25 @@ class TestState(unittest.TestCase):
         self.state = State(cube, 3, None, ActionType.TURN_UP)
 
     def test_expand_12_children(self):
-        """Scénario : expand() appelé sur un état quelconque.
-        Attendu : exactement 12 états enfants (6 clockwise + 6 counter-clockwise)."""
+        """Scenario : expand() called on any state.
+        Expected : exactly 12 child states (6 clockwise + 6 counter-clockwise)."""
         self.assertEqual(len(self.state.expand()), 12)
 
     def test_expand_increments_depth(self):
-        """Scénario : expand() appelé sur un état de profondeur 3.
-        Attendu : chaque enfant a nbrActions == 4 (profondeur parent + 1)."""
+        """Scenario : expand() called on a state of depth 3.
+        Expected : each child has nbrActions == 4 (parent depth + 1)."""
         for child in self.state.expand():
             self.assertEqual(child.nbrActions, self.state.nbrActions + 1)
 
     def test_expand_all_action_types_present(self):
-        """Scénario : expand() appelé sur un état quelconque.
-        Attendu : les 12 ActionType distincts apparaissent chacun exactement une fois."""
+        """Scenario : expand() called on any state.
+        Expected : the 12 distinct ActionType values appear exactly once each."""
         action_types = {child.fatherAction for child in self.state.expand()}
         self.assertEqual(action_types, set(ActionType))
 
     def test_initial_state_stores_attributes(self):
-        """Scénario : State créé avec des paramètres explicites.
-        Attendu : cube, nbrActions, pere et actionPere sont stockés tels quels."""
+        """Scenario : State created with explicit parameters.
+        Expected : cube, nbrActions, father and fatherAction are stored as such."""
         cube = make_solved_cube()
         state = State(cube, 7, None, ActionType.TURN_LEFT)
         self.assertIs(state.cube, cube)
@@ -308,37 +308,37 @@ class TestState(unittest.TestCase):
         self.assertEqual(state.fatherAction, ActionType.TURN_LEFT)
 
     def test_initial_state_none_action(self):
-        """Scénario : State créé avec actionType=None (état initial sans parent).
-        Attendu : actionPere vaut None (pas d'erreur de type)."""
+        """Scenario : State created with actionType=None (initial state without parent).
+        Expected : fatherAction is None (no type error)."""
         cube = make_solved_cube()
         state = State(cube, 0, None, None)
         self.assertIsNone(state.fatherAction)
         self.assertIsNone(state.father)
 
     def test_expand_does_not_mutate_parent_cube(self):
-        """Scénario : expand() appelé sur un état.
-        Attendu : le cube du parent reste inchangé après l'expansion."""
+        """Scenario : expand() called on a state.
+        Expected : the parent's cube remains unchanged after expansion."""
         original_cube = copy.deepcopy(self.state.cube)
         self.state.expand()
         self.assertEqual(self.state.cube, original_cube)
 
     def test_expand_children_parent_reference(self):
-        """Scénario : expand() appelé sur un état.
-        Attendu : chaque enfant a son attribut pere pointant vers l'état parent."""
+        """Scenario : expand() called on a state.
+        Expected : each child has its father attribute pointing to the parent state."""
         children = self.state.expand()
         for child in children:
             self.assertIs(child.father, self.state)
 
     def test_expand_children_distinct_cubes(self):
-        """Scénario : expand() appelé sur un état.
-        Attendu : les 12 enfants ont tous des configurations de cube distinctes."""
+        """Scenario : expand() called on a state.
+        Expected : the 12 children have distinct cube configurations."""
         children = self.state.expand()
         cube_strings = {str(child.cube) for child in children}
         self.assertEqual(len(cube_strings), 12)
 
     def test_expand_children_have_heuristic(self):
-        """Scénario : expand() appelé sur un état.
-        Attendu : chaque enfant possède une valH calculée (entier >= 0)."""
+        """Scenario : expand() called on a state.
+        Expected : each child has a calculated valH (integer >= 0)."""
         for child in self.state.expand():
             self.assertIsInstance(child.valH, int)
             self.assertGreaterEqual(child.valH, 0)
@@ -360,31 +360,31 @@ class TestPriorityQueueState(unittest.TestCase):
         return state
 
     def test_is_empty_initially(self):
-        """Scénario : file de priorité fraîchement instanciée.
-        Attendu : is_empty() retourne True."""
+        """Scenario : priority queue freshly instantiated.
+        Expected : is_empty() returns True."""
         self.assertTrue(self.pq.is_empty())
 
     def test_push_not_empty(self):
-        """Scénario : un état est inséré dans la file vide.
-        Attendu : is_empty() retourne False."""
+        """Scenario : a state is inserted into the empty queue.
+        Expected : is_empty() returns False."""
         self.pq.push(self._make_state(make_solved_cube(), 0))
         self.assertFalse(self.pq.is_empty())
 
     def test_pop_empty_returns_none(self):
-        """Scénario : pop() appelé sur une file vide.
-        Attendu : retourne None (pas d'exception)."""
+        """Scenario : pop() called on an empty queue.
+        Expected : returns None (no exception)."""
         self.assertIsNone(self.pq.pop())
 
     def test_push_pop_round_trip(self):
-        """Scénario : push() d'un état puis pop() immédiat.
-        Attendu : le même objet état est retourné."""
+        """Scenario : push() called with a state then pop() immediately.
+        Expected : the same state object is returned."""
         state = self._make_state(make_solved_cube(), 2)
         self.pq.push(state)
         self.assertIs(self.pq.pop(), state)
 
     def test_lowest_cost_popped_first(self):
-        """Scénario : deux états de coûts différents (10 et 2) insérés dans la file.
-        Attendu : pop() retourne l'état de coût 2 en premier (ordre croissant de f = g + h)."""
+        """Scenario : two states of different costs (10 and 2) inserted into the queue.
+        Expected : pop() returns the state of cost 2 first (ascending order of f = g + h)."""
         cube_a = make_solved_cube()
         cube_b = make_solved_cube()
         cube_b.turnUp()  # different cube so no duplicate detection
@@ -398,8 +398,8 @@ class TestPriorityQueueState(unittest.TestCase):
         self.assertIs(self.pq.pop(), state_low)
 
     def test_duplicate_replaced_if_lower_cost(self):
-        """Scénario : même cube poussé deux fois, d'abord avec coût 10, puis coût 2.
-        Attendu : la file ne contient qu'un seul état (le moins coûteux), pop() retourne celui de coût 2."""
+        """Scenario : same cube pushed twice, first with cost 10, then with cost 2.
+        Expected : the queue contains only one state (the least costly), pop() returns the one with cost 2."""
         cube = make_solved_cube()
         state_expensive = self._make_state(cube, 10, valH_override=0)  # cost = 10
         state_cheaper   = self._make_state(cube,  2, valH_override=0)  # cost = 2, same cube
@@ -411,8 +411,8 @@ class TestPriorityQueueState(unittest.TestCase):
         self.assertTrue(self.pq.is_empty())
 
     def test_same_cube_higher_cost_not_replaced(self):
-        """Scénario : même cube poussé deux fois, d'abord avec coût 2, puis coût 10.
-        Attendu : le second push est ignoré (coût plus élevé), pop() retourne l'état de coût 2."""
+        """Scenario : same cube pushed twice, first with cost 2, then with cost 10.
+        Expected : the second push is ignored (higher cost), pop() returns the state of cost 2."""
         cube = make_solved_cube()
         state_cheaper   = self._make_state(cube,  2, valH_override=0)  # cost = 2
         state_expensive = self._make_state(cube, 10, valH_override=0)  # cost = 10, same cube
@@ -424,8 +424,8 @@ class TestPriorityQueueState(unittest.TestCase):
         self.assertTrue(self.pq.is_empty())
 
     def test_three_states_popped_in_order(self):
-        """Scénario : trois états de coûts 5, 1 et 3 insérés dans la file.
-        Attendu : pop() les retourne dans l'ordre croissant : 1, 3, 5."""
+        """Scenario : three states of costs 5, 1 and 3 inserted into the queue.
+        Expected : pop() returns them in ascending order : 1, 3, 5."""
         cube_a = make_solved_cube()
         cube_b = make_solved_cube(); cube_b.turnUp()
         cube_c = make_solved_cube(); cube_c.turnFront()
@@ -443,8 +443,8 @@ class TestPriorityQueueState(unittest.TestCase):
         self.assertIs(self.pq.pop(), state_5)
 
     def test_is_empty_after_full_drain(self):
-        """Scénario : deux états poussés puis tous les deux dépilés.
-        Attendu : is_empty() retourne True une fois la file entièrement vidée."""
+        """Scenario : two states pushed then both popped.
+        Expected : is_empty() returns True once the queue is completely drained."""
         cube_a = make_solved_cube()
         cube_b = make_solved_cube(); cube_b.turnUp()
 
@@ -457,8 +457,8 @@ class TestPriorityQueueState(unittest.TestCase):
         self.assertTrue(self.pq.is_empty())
 
     def test_pop_on_empty_after_drain_returns_none(self):
-        """Scénario : pop() appelé une fois de trop après avoir vidé la file.
-        Attendu : retourne None (pas d'exception)."""
+        """Scenario : pop() called once too many after having drained the queue.
+        Expected : returns None (no exception)."""
         self.pq.push(self._make_state(make_solved_cube(), 0))
         self.pq.pop()
         self.assertIsNone(self.pq.pop())
@@ -474,15 +474,15 @@ class TestAstar(unittest.TestCase):
         ACTIONS[action](cube)
 
     def test_solve_already_solved(self):
-        """Scénario : A* lancé sur un cube déjà résolu.
-        Attendu : solve() retourne une liste vide [] (aucun mouvement nécessaire)."""
+        """Scenario : A* launched on a solved cube.
+        Expected : solve() returns an empty list [] (no moves needed)."""
         cube = make_solved_cube()
         moves = Astar(State(cube, 0, None, None)).solve()
         self.assertEqual(moves, [])
 
     def test_solve_one_move(self):
-        """Scénario : A* lancé sur un cube mélangé par un seul turnUp().
-        Attendu : solve() retourne une liste non vide (au moins un mouvement trouvé)."""
+        """Scenario : A* launched on a cube mixed by a single turnUp().
+        Expected : solve() returns a non-empty list (at least one move found)."""
         cube = make_solved_cube()
         cube.turnUp()
         moves = Astar(State(cube, 0, None, None)).solve()
@@ -490,8 +490,8 @@ class TestAstar(unittest.TestCase):
         self.assertGreater(len(moves), 0)
 
     def test_solve_two_moves(self):
-        """Scénario : A* lancé sur un cube mélangé par turnFront() + turnRight().
-        Attendu : solve() retourne une solution non None (chemin trouvé)."""
+        """Scenario : A* launched on a cube mixed by turnFront() + turnRight().
+        Expected : solve() returns a non-empty solution (path found)."""
         cube = make_solved_cube()
         cube.turnFront()
         cube.turnRight()
@@ -499,8 +499,8 @@ class TestAstar(unittest.TestCase):
         self.assertIsNotNone(moves)
 
     def test_solution_correctness(self):
-        """Scénario : cube mélangé par turnUp() + turnLeft(), résolu par A*.
-        Attendu : appliquer les moves retournés sur le cube mélangé produit isSolved() == True."""
+        """Scenario : cube mixed by turnUp() + turnLeft(), solved by A*.
+        Expected : applying the returned moves to the mixed cube produces isSolved() == True."""
         cube = make_solved_cube()
         cube.turnUp()
         cube.turnLeft()
@@ -514,8 +514,8 @@ class TestAstar(unittest.TestCase):
         self.assertTrue(test_cube.isSolved())
 
     def test_solve_three_moves(self):
-        """Scénario : A* lancé sur un cube mélangé par turnUp() + turnFront() + turnRight().
-        Attendu : solve() retourne une solution non None."""
+        """Scenario : A* launched on a cube mixed by turnUp() + turnFront() + turnRight().
+        Expected : solve() returns a non-null solution."""
         cube = make_solved_cube()
         cube.turnUp()
         cube.turnFront()
@@ -524,9 +524,9 @@ class TestAstar(unittest.TestCase):
         self.assertIsNotNone(moves)
 
     def test_solve_optimal_for_one_move(self):
-        """Scénario : A* lancé sur un cube mélangé par exactement un turnUp().
-        Attendu : la solution optimale fait exactement 1 mouvement (heuristique admissible
-        + consistante → A* trouve le plus court chemin)."""
+        """Scenario : A* launched on a cube mixed by exactly one turnUp().
+        Expected : the optimal solution contains exactly 1 move (admissible
+        + consistent heuristic → A* finds the shortest path)."""
         cube = make_solved_cube()
         cube.turnUp()
         moves = Astar(State(cube, 0, None, None)).solve()
@@ -534,9 +534,9 @@ class TestAstar(unittest.TestCase):
         self.assertEqual(len(moves), 1)
 
     def test_solve_all_12_single_moves(self):
-        """Scénario : chacun des 12 mouvements appliqué seul, puis A* lancé.
-        Attendu : pour chaque mouvement, appliquer la solution au cube mélangé
-        produit isSolved() == True."""
+        """Scenario : each of the 12 moves applied individually, then A* launched.
+        Expected : for each move, applying the solution to the mixed cube
+        produces isSolved() == True."""
         for action, method in ACTIONS.items():
             with self.subTest(action=action.name):
                 cube = make_solved_cube()
@@ -549,8 +549,8 @@ class TestAstar(unittest.TestCase):
                 self.assertTrue(test_cube.isSolved())
 
     def test_solution_is_list_of_action_types(self):
-        """Scénario : A* lancé sur un cube mélangé d'un mouvement.
-        Attendu : la solution est une list dont chaque élément est un ActionType."""
+        """Scenario : A* launched on a cube mixed by a single move.
+        Expected : the solution is a list whose elements are all ActionType instances."""
         cube = make_solved_cube()
         cube.turnDown()
         moves = Astar(State(cube, 0, None, None)).solve()

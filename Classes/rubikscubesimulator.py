@@ -177,7 +177,7 @@ class RubiksCubeSimulator:
     def actionPerformed(self, action):
         """Called every time the user presses a button."""
         if action == "shuffle":
-            self.cube = Cube()  # repart d'un cube résolu et le mélange via le constructeur
+            self.cube = Cube()  # restrats from a solved cub and the shuffle via the constructor
             self.draw_cube()
         elif action == "solve":
             self.solve()
@@ -186,7 +186,7 @@ class RubiksCubeSimulator:
             self.draw_cube()
 
     def solve(self):
-        """Lance A* dans un thread séparé pour ne pas geler l'interface."""
+        """Launch A* in a separate thread to avoid freezing the interface."""
         if self.cube.isSolved():
             messagebox.showinfo("Solve", "The cube is already solved!")
             return
@@ -199,13 +199,13 @@ class RubiksCubeSimulator:
             moves = solver.solve()
             elapsed = time.time() - start
             print(f"[Astar] Time to solve: {elapsed:.2f}s")
-            # tkinter n'est pas thread-safe : on repasse sur le thread principal via after()
+            # tkinter is not thread-safe : we switch back to the main thread via after()
             self.window.after(0, lambda: self._on_solved(moves))
 
         threading.Thread(target=run, daemon=True).start()
 
     def _on_solved(self, moves):
-        """Appelé sur le thread principal une fois A* terminé."""
+        """Called on the main thread once A* is done."""
         if moves is None:
             messagebox.showinfo("Solve", "No solution found.")
             return
