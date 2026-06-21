@@ -17,14 +17,13 @@ class Astar:
         return str(state.cube) in self.explored
     
     # Returns the set of actions needed to reach the solution
-    def solve(self) -> list[ActionType]:
+    def solve(self) -> list[ActionType] | None:
         self.frontier.push(self.state)
 
         while (not self.frontier.is_empty()):
             current_state = self.frontier.pop()
 
             if current_state.cube.isSolved():
-                print("The solution has been found. These are the winning moves in order : ")
                 moves = []
                 current = current_state
                 while current.pere is not None:
