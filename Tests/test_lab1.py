@@ -19,6 +19,20 @@ def make_solved_cube() -> Cube:
     return Cube()
 
 
+def make_labeled_cube() -> Cube:
+    """Return a cube where every sticker has a unique label instead of a shared
+    per-face color. A color-based cube has 9 identical stickers per face, so a move
+    that swaps two same-colored stickers is invisible to color comparisons; unique
+    labels make every sticker's position individually verifiable."""
+    cube = make_solved_cube()
+    for face_name in ['faceUp', 'faceDown', 'faceFront', 'faceBack', 'faceLeft', 'faceRight']:
+        face = getattr(cube, face_name)
+        for i in range(3):
+            for j in range(3):
+                face[i][j] = f"{face_name}-{i}-{j}"
+    return cube
+
+
 # ---------------------------------------------------------------------------
 # TestCube
 # ---------------------------------------------------------------------------
@@ -212,6 +226,46 @@ class TestCube(unittest.TestCase):
                 cube = make_solved_cube()
                 method(cube)
                 self.assertFalse(cube.isSolved())
+
+
+# ---------------------------------------------------------------------------
+# TestCubeStickerPositions
+# ---------------------------------------------------------------------------
+
+class TestCubeStickerPositions(unittest.TestCase):
+    """Regression guard for sticker-permutation bugs that color-based assertions
+    can't see (e.g. a move swapping two same-colored stickers on the same face).
+    Uses make_labeled_cube() so every sticker has a unique identity."""
+
+    def test_four_turns_identity_all_moves_by_position(self):
+        """Scenario : each of the 12 moves applied 4 times in a row on a position-labeled cube.
+        Expected : every sticker returns to its exact original position (not just its color)."""
+        for action, method in ACTIONS.items():
+            with self.subTest(move=action.name):
+                cube = make_labeled_cube()
+                original = copy.deepcopy(cube)
+                for _ in range(4):
+                    method(cube)
+                self.assertEqual(cube, original)
+
+    def test_reverse_pair_identity_all_moves_by_position(self):
+        """Scenario : turnX() followed by returnX() on a position-labeled cube, for each face.
+        Expected : every sticker returns to its exact original position (not just its color)."""
+        pairs = [
+            ('turnUp', 'returnUp'),
+            ('turnDown', 'returnDown'),
+            ('turnFront', 'returnFront'),
+            ('turnBack', 'returnBack'),
+            ('turnLeft', 'returnLeft'),
+            ('turnRight', 'returnRight'),
+        ]
+        for forward, backward in pairs:
+            with self.subTest(pair=f"{forward}+{backward}"):
+                cube = make_labeled_cube()
+                original = copy.deepcopy(cube)
+                getattr(cube, forward)()
+                getattr(cube, backward)()
+                self.assertEqual(cube, original)
 
 
 # ---------------------------------------------------------------------------

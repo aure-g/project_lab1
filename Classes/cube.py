@@ -2,7 +2,7 @@ import random
 class Cube:
     COLORS = ['W', 'Y', 'G', 'B', 'O', 'R']
     NB_SQUARES: int = 9
-    NB_MOVE_SHUFFLE: int = 5 # A* in Python cannot solve the cube above 4-5 moves in reasonable time thus the limit is set to 5
+    NB_MOVE_SHUFFLE: int = 6 # A* in Python cannot solve the cube above 4-5 moves in reasonable time thus the limit is set to 5
 
     def __init__(self):
         """Initialize a solved cube."""
@@ -94,14 +94,14 @@ class Cube:
         self.faceUp[2][1] = self.faceLeft[1][2]
         self.faceUp[2][2] = self.faceLeft[0][2]
         
-        self.faceLeft[2][2] = self.faceDown[0][0]
+        self.faceLeft[2][2] = self.faceDown[0][2]
         self.faceLeft[1][2] = self.faceDown[0][1]
-        self.faceLeft[0][2] = self.faceDown[0][2]
-        
+        self.faceLeft[0][2] = self.faceDown[0][0]
+
         self.faceDown[0][0] = self.faceRight[2][0]
         self.faceDown[0][1] = self.faceRight[1][0]
         self.faceDown[0][2] = self.faceRight[0][0]
-        
+
         self.faceRight[0][0] = oldUp[0]
         self.faceRight[1][0] = oldUp[1]
         self.faceRight[2][0] = oldUp[2]
