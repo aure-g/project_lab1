@@ -1,40 +1,55 @@
+import heapq
+import itertools
 from .state import State
 
 class PriorityQueueState:
     def __init__(self):
-        """Initialize an empty priority queue storing (State, cost) tuples."""
-        # Stored in the queue as tuples (cube_state, state_cost)
-        self.queue = []
+        """Initialize an empty priority queue backed by a binary heap."""
+        # Heap entries are (cost, tie_breaker, state) tuples.
+        # The tie_breaker is a unique increasing counter so heapq never
+        # needs to compare two State objects when costs are equal.
+        self.heap: list[tuple[int, int, State]] = []
+        self.counter = itertools.count()
+        # Tracks, per cube configuration (keyed by its string form), the
+        # lowest cost currently queued. Lets push()/pop() detect duplicates
+        # and stale entries in O(1) instead of scanning the whole queue.
+        self.best_cost: dict[str, int] = {}
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """Return True if the queue contains no states."""
-        return len(self.queue)== 0
+        self._discard_stale_top()
+        return len(self.heap) == 0
 
-    def push(self, new_state:State):
+    def push(self, new_state: State) -> None:
         """Insert new_state or update it if a cheaper path to the same cube config exists."""
         cost_to_goal = new_state.valH if new_state.valH is not None else 0
         new_state_cost = new_state.nbrActions + cost_to_goal
+        cube_key = str(new_state.cube)
 
-        for i, (explored_state, explored_cost) in enumerate(self.queue):
-            # Checking if we already know this cube state
-            if (explored_state.cube == new_state.cube):
-                if (new_state_cost < explored_cost):
-                    self.queue[i] = (new_state, new_state_cost) # we replace the already existing cube state with an improved cost and a state reached with a different path
-                    self.sort()
-                return
-        # Case the configuration is new 
-        self.queue.append((new_state, new_state_cost))
-        self.sort()
-    
-    def sort(self):
-        """Sort the queue in ascending order of total cost f = g + h."""
-        # we sort using only the cost, we do not sort the tuples as a whole
-        self.queue.sort(key= lambda x : x[1])
+        known_cost = self.best_cost.get(cube_key)
+        if known_cost is not None and known_cost <= new_state_cost:
+            # We already know an equal or cheaper path to this cube state.
+            return
 
-    def pop(self) -> State|None :
+        # Either a brand new configuration, or a cheaper path to a known one.
+        # The previous heap entry (if any) is left in place and will be
+        # skipped later as a stale entry once it bubbles to the top.
+        self.best_cost[cube_key] = new_state_cost
+        heapq.heappush(self.heap, (new_state_cost, next(self.counter), new_state))
+
+    def pop(self) -> State | None:
         """Remove and return the state with the lowest f-cost, or None if empty."""
-        if (not self.is_empty()):
-            best_state, best_cost = self.queue.pop(0)
-            return best_state
-        return None
+        self._discard_stale_top()
+        if not self.heap:
+            return None
+        cost, _, state = heapq.heappop(self.heap)
+        del self.best_cost[str(state.cube)]
+        return state
 
+    def _discard_stale_top(self) -> None:
+        """Pop superseded heap entries sitting at the top (replaced by a cheaper push)."""
+        while self.heap:
+            cost, _, state = self.heap[0]
+            if self.best_cost.get(str(state.cube)) == cost:
+                return
+            heapq.heappop(self.heap)

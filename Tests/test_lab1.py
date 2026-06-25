@@ -122,8 +122,6 @@ class TestCube(unittest.TestCase):
         other.turnUp()
         self.assertNotEqual(self.cube, other)
 
-    # --- nouveaux tests ---
-
     def test_eq_with_non_cube_returns_false(self):
         """Scenario : comparison of the cube with an object that is not a Cube.
         Expected : __eq__ returns False (no error, just False)."""
@@ -217,6 +215,52 @@ class TestCube(unittest.TestCase):
         self.assertEqual([self.cube.faceLeft[r][2] for r in range(3)], ['Y', 'Y', 'Y'])
         self.assertEqual(self.cube.faceDown[0], ['R', 'R', 'R'])
         self.assertEqual([self.cube.faceRight[r][0] for r in range(3)], ['W', 'W', 'W'])
+
+    def test_turn_down_cycles_bottom_rows(self):
+        """Scenario : turnDown() on a solved cube (Up=W, Down=Y, Front=G, Back=B, Left=O, Right=R).
+        Expected : the bottom row of the side faces rotates — Front[2] receives Left[2],
+        Left[2] receives Back[2], Back[2] receives Right[2], Right[2] receives the original Front[2]."""
+        self.cube.turnDown()
+        self.assertEqual(self.cube.faceFront[2], ['O', 'O', 'O'])
+        self.assertEqual(self.cube.faceLeft[2],  ['B', 'B', 'B'])
+        self.assertEqual(self.cube.faceBack[2],  ['R', 'R', 'R'])
+        self.assertEqual(self.cube.faceRight[2], ['G', 'G', 'G'])
+
+    def test_turn_back_cycles_border(self):
+        """Scenario : turnBack() on a solved cube (Up=W, Down=Y, Front=G, Back=B, Left=O, Right=R).
+        Expected : the border around the Back face rotates — top row of Up receives
+        the right column of Right (R), right column of Right receives bottom row of Down (Y),
+        bottom row of Down receives the left column of Left (O), left column of Left
+        receives the original top row of Up (W)."""
+        self.cube.turnBack()
+        self.assertEqual(self.cube.faceUp[0], ['R', 'R', 'R'])
+        self.assertEqual([self.cube.faceRight[r][2] for r in range(3)], ['Y', 'Y', 'Y'])
+        self.assertEqual(self.cube.faceDown[2], ['O', 'O', 'O'])
+        self.assertEqual([self.cube.faceLeft[r][0] for r in range(3)], ['W', 'W', 'W'])
+
+    def test_turn_left_cycles_border(self):
+        """Scenario : turnLeft() on a solved cube (Up=W, Down=Y, Front=G, Back=B, Left=O, Right=R).
+        Expected : the border around the Left face rotates — left column of Up receives
+        the right column of Back (B), right column of Back receives left column of Down (Y),
+        left column of Down receives left column of Front (G), left column of Front
+        receives the original left column of Up (W)."""
+        self.cube.turnLeft()
+        self.assertEqual([self.cube.faceUp[r][0] for r in range(3)], ['B', 'B', 'B'])
+        self.assertEqual([self.cube.faceBack[r][2] for r in range(3)], ['Y', 'Y', 'Y'])
+        self.assertEqual([self.cube.faceDown[r][0] for r in range(3)], ['G', 'G', 'G'])
+        self.assertEqual([self.cube.faceFront[r][0] for r in range(3)], ['W', 'W', 'W'])
+
+    def test_turn_right_cycles_border(self):
+        """Scenario : turnRight() on a solved cube (Up=W, Down=Y, Front=G, Back=B, Left=O, Right=R).
+        Expected : the border around the Right face rotates — right column of Up receives
+        the right column of Front (G), right column of Front receives right column of Down (Y),
+        right column of Down receives left column of Back (B), left column of Back
+        receives the original right column of Up (W)."""
+        self.cube.turnRight()
+        self.assertEqual([self.cube.faceUp[r][2] for r in range(3)], ['G', 'G', 'G'])
+        self.assertEqual([self.cube.faceFront[r][2] for r in range(3)], ['Y', 'Y', 'Y'])
+        self.assertEqual([self.cube.faceDown[r][2] for r in range(3)], ['B', 'B', 'B'])
+        self.assertEqual([self.cube.faceBack[r][0] for r in range(3)], ['W', 'W', 'W'])
 
     def test_is_solved_false_after_each_move(self):
         """Scenario : each of the 12 moves applied alone on a solved cube.

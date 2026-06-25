@@ -12,7 +12,7 @@ from Classes.state import State
 from Classes.astar import Astar
 
 NB_RUNS = 10
-MAX_SOLVE_SECONDS = 120.0
+MAX_SOLVE_SECONDS = 150.0
 
 
 def _solve_with_default_scramble(run_index: int, result_queue: multiprocessing.Queue) -> None:

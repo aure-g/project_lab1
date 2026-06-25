@@ -1,8 +1,8 @@
 import random
 class Cube:
-    COLORS = ['W', 'Y', 'G', 'B', 'O', 'R']
-    NB_SQUARES: int = 9
-    NB_MOVE_SHUFFLE: int = 6 # A* in Python cannot solve the cube above 4-5 moves in reasonable time thus the limit is set to 5
+    COLORS = ['W', 'Y', 'G', 'B', 'O', 'R']  # The 6 colors of the cube's faces
+    NB_SQUARES: int = 9  # Number of stickers per face (3x3 grid)
+    NB_MOVE_SHUFFLE: int = 10 # A* in Python cannot solve the cube above 12+ moves in reasonable time thus the limit is set to 6
 
     def __init__(self):
         """Initialize a solved cube."""
@@ -42,6 +42,7 @@ class Cube:
 
     def __str__(self) -> str:
         """Return a human-readable side-by-side display of all 6 faces."""
+        # Former console-based UI, since replaced by RubiksCubeSimulator (Classes/rubikscubesimulator.py)
         # Displays 3x3 squares, the 6 sides on the same line
         result = " UP     DOWN    FRONT    BACK   LEFT   RIGHT\n"
         for i in range(3):
