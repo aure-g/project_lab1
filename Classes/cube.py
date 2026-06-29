@@ -2,7 +2,7 @@ import random
 class Cube:
     COLORS = ['W', 'Y', 'G', 'B', 'O', 'R']  # The 6 colors of the cube's faces
     NB_SQUARES: int = 9  # Number of stickers per face (3x3 grid)
-    NB_MOVE_SHUFFLE: int = 10 # A* in Python cannot solve the cube above 12+ moves in reasonable time thus the limit is set to 6
+    NB_MOVE_SHUFFLE: int = 10 # A* in Python cannot solve the cube above 12+ moves in reasonable time thus the limit is set to 10
 
     def __init__(self):
         """Initialize a solved cube."""
